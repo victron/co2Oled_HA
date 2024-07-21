@@ -35,6 +35,7 @@ void setupWiFi()
 
     while (WiFi.status() != WL_CONNECTED)
     {
+        WiFi.hostname("co2");
         delay(500);
         Serial.print(".");
     }
