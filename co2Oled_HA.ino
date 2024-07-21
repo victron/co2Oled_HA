@@ -30,6 +30,7 @@ void setupWiFi()
     Serial.print("connecting to ");
     Serial.println(WIFI_SSID);
 
+    WiFi.hostname("co2");
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     while (WiFi.status() != WL_CONNECTED)
