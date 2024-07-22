@@ -67,7 +67,7 @@ void setup()
     wifiLostCount.setName("WIFI lost count");
     wifiLostCount.setUnitOfMeasurement("n");
 
-    wifiRssi.setIcon("mdi:gauge");
+    wifiRssi.setIcon("mdi:wifi");
     wifiRssi.setName("WIFI RSSI");
     wifiRssi.setUnitOfMeasurement("dBm");
 
