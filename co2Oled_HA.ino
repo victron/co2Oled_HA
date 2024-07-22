@@ -35,7 +35,7 @@ void setupWiFi()
 
     while (WiFi.status() != WL_CONNECTED)
     {
-        WiFi.hostname("co2");
+        // WiFi.hostname("co2");
         delay(500);
         Serial.print(".");
     }
@@ -56,6 +56,8 @@ void setup()
 
     // OLED used nonstandard SDA and SCL pins
     Wire.begin(D5, D6);
+
+    setupWiFi();
 
     init_oled();
     init_sensor();
