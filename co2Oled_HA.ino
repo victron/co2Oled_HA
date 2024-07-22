@@ -23,7 +23,7 @@ HASensorNumber co2Sensor("co2", HASensorNumber::PrecisionP0);
 HASensorNumber tempSensor("temperature", HASensorNumber::PrecisionP2);
 HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
 HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
-HASensorNumber wifi_rssi("WiFi Power", HASensorNumber::PrecisionP0);
+HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 
 void setupWiFi()
 {
@@ -67,9 +67,9 @@ void setup()
     wifiLostCount.setName("WIFI lost count");
     wifiLostCount.setUnitOfMeasurement("n");
 
-    wifi_rssi.setIcon("mdi:gauge");
-    wifi_rssi.setName("WiFi rsi");
-    wifi_rssi.setUnitOfMeasurement("dBm");
+    wifiRssi.setIcon("mdi:gauge");
+    wifiRssi.setName("WIFI RSSI");
+    wifiRssi.setUnitOfMeasurement("dBm");
 
     // Ініціалізація OTA з паролем
     setupOTA("bath_fan", OTA_PASSWORD);
@@ -116,6 +116,6 @@ void loop()
         wifiLostCount.setValue(wifi_fail_counter);
 
         // int32_t rssi = WiFi.RSSI();
-        wifi_rssi.setValue(wifi_fail_counter);
+        wifiRssi.setValue(wifi_fail_counter);
     }
 }
