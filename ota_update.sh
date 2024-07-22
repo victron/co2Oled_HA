@@ -3,7 +3,7 @@
 # arduino-cli lib install "Sensirion I2C SCD4x"
 
 . ./secrets.sh
-espota='python3 ~/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/espota.py'
+espota="python3 /home/vic/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/espota.py"
 build_cache='~/ota_update/build_cache'
 builds_dir='~/ota_update/build'
 
