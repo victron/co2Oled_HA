@@ -8,6 +8,7 @@
 #include "co2sensor.h"
 #include "OTAHandler.h"
 
+#define HOSTNAME "co2"
 // globals for sensor
 uint16_t co2 = 0;
 float temperature = 0.0f;
@@ -30,12 +31,11 @@ void setupWiFi()
     Serial.print("connecting to ");
     Serial.println(WIFI_SSID);
 
-    WiFi.hostname("co2");
+    WiFi.hostname(HOSTNAME);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     while (WiFi.status() != WL_CONNECTED)
     {
-        // WiFi.hostname("co2");
         delay(500);
         Serial.print(".");
     }
