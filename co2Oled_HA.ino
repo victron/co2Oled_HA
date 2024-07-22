@@ -115,7 +115,7 @@ void loop()
         // analogSensor.setValue(nullptr);
         wifiLostCount.setValue(wifi_fail_counter);
 
-        // int32_t rssi = WiFi.RSSI();
-        wifiRssi.setValue(wifi_fail_counter);
+        int8_t rssi = WiFi.RSSI();
+        wifiRssi.setValue(rssi);
     }
 }
