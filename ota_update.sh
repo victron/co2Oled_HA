@@ -3,7 +3,7 @@
 # arduino-cli lib install "Sensirion I2C SCD4x"
 
 . ./secrets.sh
-espota="python3 /home/vic/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/espota.py"
+espota='/home/vic/.arduino15/packages/esp8266/hardware/esp8266/3.1.2/tools/espota.py'
 build_cache='~/ota_update/build_cache'
 builds_dir='~/ota_update/build'
 
@@ -15,4 +15,4 @@ if [ $? -ne 0 ]; then
   echo "Команда завершилась з помилкою. Завершення скрипта."
   exit 1
 fi
-${espota} --ip ${DEVICE_IP} --auth=${OTA_PASSWORD} --file ${builds_dir}/co2Oled_HA.ino.bin
+python3 ${espota} --ip ${DEVICE_IP} --auth=${OTA_PASSWORD} --file ${builds_dir}/co2Oled_HA.ino.bin
