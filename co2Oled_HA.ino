@@ -49,7 +49,6 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
     } else if(strcmp(message, "OFF") == 0) {
       relayState = false;
     }
-    waitingForStatus = false;  // Отримано статус, завершити очікування
   }
 }
 
@@ -101,6 +100,7 @@ void setup() {
   // press callbacks
   buttonA.onCommand(onButtonCommand);
   mqtt.onMessage(onMqttMessage);
+  mqtt.subscribe("homeassistant/switch/relay1/state");
 
   // Ініціалізація OTA з паролем
   setupOTA("bath_fan", OTA_PASSWORD);
@@ -124,15 +124,15 @@ void loop() {
 
   // Перевірка натискання кнопки
   if(btn.click()) {
-    // Запитуємо поточний стан реле
-    mqtt.publish(fan_state_topic, "");
-    // Очікуємо на отримання статусу
-    waitingForStatus = true;
-    // Очікуємо на отримання статусу
-    unsigned long start = millis();
-    while(waitingForStatus && millis() - start < 5000) {  // Максимальний час очікування - 5 секунд
-      mqtt.loop();                                        // Обробляємо вхідні повідомлення
-    }
+    // // Запитуємо поточний стан реле
+    // mqtt.publish(fan_state_topic, "");
+    // // Очікуємо на отримання статусу
+    // waitingForStatus = true;
+    // // Очікуємо на отримання статусу
+    // unsigned long start = millis();
+    // while(waitingForStatus && millis() - start < 5000) {  // Максимальний час очікування - 5 секунд
+    //   mqtt.loop();                                        // Обробляємо вхідні повідомлення
+    // }
     mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayState ? "OFF" : "ON"));
   }
 
