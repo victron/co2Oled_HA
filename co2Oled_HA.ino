@@ -39,12 +39,14 @@ void onButtonCommand(HAButton* sender) {
 bool relayState = false;
 bool waitingForStatus = false;
 const char* fan_state_topic = "aha/bath_fan/fan_switch/stat_t";
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  payload[length] = '\0';
-  if(strcmp(topic, fan_state_topic) == 0) {
-    if(strcmp((char*)payload, "ON") == 0) {
+void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
+  char message[length + 1];
+  memcpy(message, payload, length);
+  message[length] = '\0';
+  if(strcmp(topic, "homeassistant/switch/relay1/state") == 0) {
+    if(strcmp(message, "ON") == 0) {
       relayState = true;
-    } else if(strcmp((char*)payload, "OFF") == 0) {
+    } else if(strcmp(message, "OFF") == 0) {
       relayState = false;
     }
     waitingForStatus = false;  // Отримано статус, завершити очікування
@@ -95,8 +97,10 @@ void setup() {
 
   buttonA.setIcon("mdi:fan-alert");
   buttonA.setName("Click stat");
+
   // press callbacks
   buttonA.onCommand(onButtonCommand);
+  mqtt.onMessage(onMqttMessage);
 
   // Ініціалізація OTA з паролем
   setupOTA("bath_fan", OTA_PASSWORD);
@@ -124,8 +128,10 @@ void loop() {
     mqtt.publish(fan_state_topic, "");
     // Очікуємо на отримання статусу
     waitingForStatus = true;
-    while(waitingForStatus) {
-      mqtt.loop();  // Обробляємо вхідні повідомлення
+    // Очікуємо на отримання статусу
+    unsigned long start = millis();
+    while(waitingForStatus && millis() - start < 5000) {  // Максимальний час очікування - 5 секунд
+      mqtt.loop();                                        // Обробляємо вхідні повідомлення
     }
     mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayState ? "OFF" : "ON"));
   }
