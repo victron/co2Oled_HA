@@ -36,6 +36,21 @@ void onButtonCommand(HAButton* sender) {
   }
 }
 
+bool relayState = false;
+bool waitingForStatus = false;
+const char* fan_state_topic = "aha/bath_fan/fan_switch/stat_t";
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  payload[length] = '\0';
+  if(strcmp(topic, fan_state_topic) == 0) {
+    if(strcmp((char*)payload, "ON") == 0) {
+      relayState = true;
+    } else if(strcmp((char*)payload, "OFF") == 0) {
+      relayState = false;
+    }
+    waitingForStatus = false;  // Отримано статус, завершити очікування
+  }
+}
+
 void setupWiFi() {
   delay(10);
   Serial.println();
@@ -105,7 +120,14 @@ void loop() {
 
   // Перевірка натискання кнопки
   if(btn.click()) {
-    mqtt.publish("aha/bath_fan/fan_switch/cmd_t", "ON");
+    // Запитуємо поточний стан реле
+    mqtt.publish(fan_state_topic, "");
+    // Очікуємо на отримання статусу
+    waitingForStatus = true;
+    while(waitingForStatus) {
+      mqtt.loop();  // Обробляємо вхідні повідомлення
+    }
+    mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayState ? "OFF" : "ON"));
   }
 
   mqtt.loop();
