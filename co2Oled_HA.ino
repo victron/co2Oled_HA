@@ -27,11 +27,11 @@ HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
 HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 
-HAButton button("button1");
+HAButton buttonA("button1");
 button btn(BUTTON_PIN);
 
 void onButtonCommand(HAButton* sender) {
-  if(sender == &button) {
+  if(sender == &buttonA) {
     // для моніторингу
   }
 }
@@ -78,10 +78,10 @@ void setup() {
   wifiRssi.setName("WIFI RSSI");
   wifiRssi.setUnitOfMeasurement("dBm");
 
-  button.setIcon("mdi:fan-alert");
-  button.setName("Click stat");
+  buttonA.setIcon("mdi:fan-alert");
+  buttonA.setName("Click stat");
   // press callbacks
-  button.onCommand(onButtonCommand);
+  buttonA.onCommand(onButtonCommand);
 
   // Ініціалізація OTA з паролем
   setupOTA("bath_fan", OTA_PASSWORD);
