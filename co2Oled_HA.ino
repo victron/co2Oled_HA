@@ -43,7 +43,7 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   char message[length + 1];
   memcpy(message, payload, length);
   message[length] = '\0';
-  if(strcmp(topic, "homeassistant/switch/relay1/state") == 0) {
+  if(strcmp(topic, fan_state_topic) == 0) {
     if(strcmp(message, "ON") == 0) {
       relayState = true;
     } else if(strcmp(message, "OFF") == 0) {
