@@ -1,12 +1,10 @@
 #include "OTAHandler.h"
 
-void setupOTA(const char *hostname, const char *password)
-{
-    ArduinoOTA.setHostname(hostname);
-    ArduinoOTA.setPassword(password); // Додавання пароля
+void setupOTA(const char *hostname, const char *password) {
+  ArduinoOTA.setHostname(hostname);
+  ArduinoOTA.setPassword(password);  // Додавання пароля
 
-    ArduinoOTA.onStart([]()
-                       {
+  ArduinoOTA.onStart([]() {
         String type;
         if (ArduinoOTA.getCommand() == U_FLASH) {
             type = "sketch";
@@ -15,14 +13,11 @@ void setupOTA(const char *hostname, const char *password)
         }
         Serial.println("Start updating " + type); });
 
-    ArduinoOTA.onEnd([]()
-                     { Serial.println("\nEnd"); });
+  ArduinoOTA.onEnd([]() { Serial.println("\nEnd"); });
 
-    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
-                          { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); });
 
-    ArduinoOTA.onError([](ota_error_t error)
-                       {
+  ArduinoOTA.onError([](ota_error_t error) {
         Serial.printf("Error[%u]: ", error);
         if (error == OTA_AUTH_ERROR) {
             Serial.println("Auth Failed");
@@ -36,8 +31,8 @@ void setupOTA(const char *hostname, const char *password)
             Serial.println("End Failed");
         } });
 
-    ArduinoOTA.begin();
-    Serial.println("Ready");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
+  ArduinoOTA.begin();
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 }
