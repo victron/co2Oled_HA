@@ -11,7 +11,8 @@
 
 #define HOSTNAME "co2"
 #define BUTTON_PIN 13
-#define LED 16
+#define LED 2
+bool connected = false;
 // globals for sensor
 uint16_t co2 = 0;
 float temperature = 0.0f;
@@ -74,10 +75,13 @@ void onMqttConnected() {
 
   // You can subscribe to custom topic if you need
   mqtt.subscribe(fan_state_topic);
+  digitalWrite(LED, HIGH);
+  connected = true;
 }
 
 void onMqttDisconnected() {
   Serial.println("Disconnected from the broker!");
+  connected = false;
 }
 
 void onMqttStateChanged(HAMqtt::ConnectionState state) {
@@ -97,7 +101,11 @@ void setupWiFi() {
     delay(500);
     Serial.print(".");
   }
-
+  if(WiFi.status() != WL_CONNECTED) {
+    Serial.println("");
+    Serial.println("WiFi NOT connected!!!!");
+    return;
+  }
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
@@ -112,8 +120,10 @@ void setup() {
 
   // OLED used nonstandard SDA and SCL pins
   Wire.begin(D5, D6);
+
+  // LED id
   pinMode(LED, OUTPUT);  // LED pin as output
-  digitalWrite(LED, HIGH);
+  digitalWrite(LED, LOW);
 
   setupWiFi();
 
@@ -154,12 +164,18 @@ unsigned long lastUpdateAt = 0;
 unsigned int wifi_fail_counter = 0;
 const unsigned int wifi_fail_triger = 300000;  // при кількості спроб реконнест
 void loop() {
+  if(!connected && WiFi.status() == WL_CONNECTED) {
+    // not mqtt and connected to wifi
+    Serial.println("WiFi OK, mqtt NOK");
+    digitalWrite(LED, (millis() / 1000) % 2);
+  }
   // Перевірка WiFi з'єднання
   if(WiFi.status() != WL_CONNECTED && wifi_fail_counter > wifi_fail_triger) {
     Serial.println("WiFi lost, trying to reconnect...");
     setupWiFi();
   }
   if(WiFi.status() != WL_CONNECTED) {
+    digitalWrite(LED, LOW);
     wifi_fail_counter++;
     Serial.print("WiFi lost, counter=");
     Serial.println(wifi_fail_counter);
