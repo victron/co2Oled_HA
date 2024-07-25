@@ -1,16 +1,14 @@
 #include "oled.h"
+
 #include <Adafruit_GFX.h>
 
+#define SCREEN_WIDTH 128  // OLED display width, in pixels
+#define SCREEN_HEIGHT 64  // OLED display height, in pixels
 
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-#define OLED_RESET     -1   // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C // If not work please try 0x3D
-#define OLED_SDA D5         // Stock firmware shows wrong pins
-#define OLED_SCL D6         // They swap SDA with SCL ;)
-
+#define OLED_RESET -1        // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C  // If not work please try 0x3D
+#define OLED_SDA D5          // Stock firmware shows wrong pins
+#define OLED_SCL D6          // They swap SDA with SCL ;)
 
 Adafruit_SSD1306 *display;
 void init_oled() {
@@ -24,7 +22,7 @@ void init_oled() {
   }
 }
 
-void handle_oled(uint16_t co2, float temperature, float humidity ) {
+void handle_oled(uint16_t co2, float temperature, float humidity) {
   display->clearDisplay();
   display->setTextSize(2);
   display->setTextColor(SSD1306_WHITE);
@@ -36,9 +34,9 @@ void handle_oled(uint16_t co2, float temperature, float humidity ) {
   display->println(temperature);
   display->print("h%:");
   display->println(humidity);
+  String button_signal = (button_pushed) ? "B" : " ";
+  String fan_status = (relayState) ? "FAN" : "   ";
+  printf("%s       %s\n", button_signal, fan_status);
 
   display->display();
 }
-
-
-

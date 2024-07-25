@@ -11,6 +11,8 @@
 
 #define HOSTNAME "co2"
 #define BUTTON_PIN 13
+#define LED 2
+bool connected = false;
 // globals for sensor
 uint16_t co2 = 0;
 float temperature = 0.0f;
@@ -37,19 +39,61 @@ void onButtonCommand(HAButton* sender) {
 }
 
 bool relayState = false;
-bool waitingForStatus = false;
+bool button_pushed = false;
 const char* fan_state_topic = "aha/bath_fan/fan_switch/stat_t";
+
 void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
+  // This callback is called when message from MQTT broker is received.
+
+  Serial.print("New message on topic: ");
+  Serial.println(topic);
+  if(strcmp(topic, fan_state_topic) != 0) {
+    // Please note that you should always verify if the message's topic is the one you expect.
+    // For example: if (memcmp(topic, "myCustomTopic") == 0) { ... }
+    Serial.print("Expected topic: ");
+    Serial.println(fan_state_topic);
+    return;
+  }
+  Serial.print("Data: ");
+  Serial.println((const char*)payload);
+
   char message[length + 1];
   memcpy(message, payload, length);
   message[length] = '\0';
-  if(strcmp(topic, fan_state_topic) == 0) {
-    if(strcmp(message, "ON") == 0) {
-      relayState = true;
-    } else if(strcmp(message, "OFF") == 0) {
-      relayState = false;
-    }
+  Serial.print("Message: ");
+  Serial.println(message);
+
+  if(strcmp(message, "ON") == 0) {
+    relayState = true;
+  } else if(strcmp(message, "OFF") == 0) {
+    relayState = false;
   }
+  button_pushed = false;
+}
+
+void onMqttConnected() {
+  // Please note that you need to subscribe topic each time the connection with the broker is acquired.
+  // in this reason all below callbacks needed
+  // mqtt.onMessage(onMqttMessage);
+  // mqtt.onConnected(onMqttConnected);
+  // mqtt.onDisconnected(onMqttDisconnected);
+  // mqtt.onStateChanged(onMqttStateChanged);
+  Serial.println("Connected to the broker! subscribing");
+
+  // You can subscribe to custom topic if you need
+  mqtt.subscribe(fan_state_topic);
+  digitalWrite(LED, HIGH);
+  connected = true;
+}
+
+void onMqttDisconnected() {
+  Serial.println("Disconnected from the broker!");
+  connected = false;
+}
+
+void onMqttStateChanged(HAMqtt::ConnectionState state) {
+  Serial.print("MQTT state changed to: ");
+  Serial.println(static_cast<int8_t>(state));
 }
 
 void setupWiFi() {
@@ -64,7 +108,11 @@ void setupWiFi() {
     delay(500);
     Serial.print(".");
   }
-
+  if(WiFi.status() != WL_CONNECTED) {
+    Serial.println("");
+    Serial.println("WiFi NOT connected!!!!");
+    return;
+  }
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
@@ -80,10 +128,19 @@ void setup() {
   // OLED used nonstandard SDA and SCL pins
   Wire.begin(D5, D6);
 
+  // LED id
+  pinMode(LED, OUTPUT);  // LED pin as output
+  digitalWrite(LED, LOW);
+
   setupWiFi();
 
   init_oled();
   init_sensor();
+  buttonA.onCommand(onButtonCommand);
+  mqtt.onMessage(onMqttMessage);
+  mqtt.onConnected(onMqttConnected);
+  mqtt.onDisconnected(onMqttDisconnected);
+  mqtt.onStateChanged(onMqttStateChanged);
   init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
 
   wifiLostCount.setIcon("mdi:gauge");
@@ -97,25 +154,35 @@ void setup() {
   buttonA.setIcon("mdi:fan-alert");
   buttonA.setName("Click stat");
 
+  // Serial.println("Subscribing to topic...");
+  // if(mqtt.subscribe(fan_state_topic)) {
+  //   Serial.println("Subscribed to topic");
+  // } else {
+  //   Serial.println("Failed to subscribe to topic");
+  //   Serial.print("MQTT subscription state: ");
+  //   Serial.println(mqtt.getState());
+  // }
   // press callbacks
-  buttonA.onCommand(onButtonCommand);
-  mqtt.onMessage(onMqttMessage);
-  mqtt.subscribe("homeassistant/switch/relay1/state");
-
   // Ініціалізація OTA з паролем
-  setupOTA("bath_fan", OTA_PASSWORD);
+  setupOTA(HOSTNAME, OTA_PASSWORD);
 }
 
 unsigned long lastUpdateAt = 0;
 unsigned int wifi_fail_counter = 0;
 const unsigned int wifi_fail_triger = 300000;  // при кількості спроб реконнест
 void loop() {
+  if(!connected && WiFi.status() == WL_CONNECTED) {
+    // not mqtt and connected to wifi
+    Serial.println("WiFi OK, mqtt NOK");
+    digitalWrite(LED, (millis() / 1000) % 2);
+  }
   // Перевірка WiFi з'єднання
   if(WiFi.status() != WL_CONNECTED && wifi_fail_counter > wifi_fail_triger) {
     Serial.println("WiFi lost, trying to reconnect...");
     setupWiFi();
   }
   if(WiFi.status() != WL_CONNECTED) {
+    digitalWrite(LED, LOW);
     wifi_fail_counter++;
     Serial.print("WiFi lost, counter=");
     Serial.println(wifi_fail_counter);
@@ -124,15 +191,9 @@ void loop() {
 
   // Перевірка натискання кнопки
   if(btn.click()) {
-    // // Запитуємо поточний стан реле
-    // mqtt.publish(fan_state_topic, "");
-    // // Очікуємо на отримання статусу
-    // waitingForStatus = true;
-    // // Очікуємо на отримання статусу
-    // unsigned long start = millis();
-    // while(waitingForStatus && millis() - start < 5000) {  // Максимальний час очікування - 5 секунд
-    //   mqtt.loop();                                        // Обробляємо вхідні повідомлення
-    // }
+    Serial.print("relayState: ");
+    Serial.println(relayState);
+    button_pushed = true;
     mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayState ? "OFF" : "ON"));
   }
 
