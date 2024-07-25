@@ -34,8 +34,8 @@ void handle_oled(uint16_t co2, float temperature, float humidity) {
   display->println(temperature);
   display->print("h%:");
   display->println(humidity);
-  String button_signal = (button_pushed) ? "B" : " ";
-  String fan_status = (relayState) ? "FAN" : "   ";
+  String button_signal = (button_pushed) ? "B" : "-";
+  String fan_status = (relayState) ? "FAN" : "---";
   printf("%s       %s\n", button_signal, fan_status);
 
   display->display();
