@@ -39,15 +39,21 @@ void onButtonCommand(HAButton* sender) {
 }
 
 bool relayState = false;
+bool button_pushed = false;
 const char* fan_state_topic = "aha/bath_fan/fan_switch/stat_t";
 
 void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   // This callback is called when message from MQTT broker is received.
-  // Please note that you should always verify if the message's topic is the one you expect.
-  // For example: if (memcmp(topic, "myCustomTopic") == 0) { ... }
 
   Serial.print("New message on topic: ");
   Serial.println(topic);
+  if(strcmp(topic, fan_state_topic) != 0) {
+    // Please note that you should always verify if the message's topic is the one you expect.
+    // For example: if (memcmp(topic, "myCustomTopic") == 0) { ... }
+    Serial.print("Expected topic: ");
+    Serial.println(fan_state_topic);
+    return;
+  }
   Serial.print("Data: ");
   Serial.println((const char*)payload);
 
@@ -62,6 +68,7 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   } else if(strcmp(message, "OFF") == 0) {
     relayState = false;
   }
+  button_pushed = false;
 }
 
 void onMqttConnected() {
@@ -186,6 +193,7 @@ void loop() {
   if(btn.click()) {
     Serial.print("relayState: ");
     Serial.println(relayState);
+    button_pushed = true;
     mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayState ? "OFF" : "ON"));
   }
 
