@@ -39,9 +39,9 @@ void onButtonCommand(HAButton* sender) {
 }
 
 bool button_pushed = false;
-const char* fan_state_bath = "aha/bath_fan/fan_switch/stat_t";
+const char* bath_state_topic = "aha/bath_fan/fan_switch/stat_t";
 bool relayBath = false;
-const char* fan_state_toilet = "aha/toilet_fan/fan_switch_toilet/stat_t";
+const char* toilet_state_topic = "aha/toilet_fan/fan_switch_toilet/stat_t";
 bool relayToilet = false;
 
 void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
@@ -49,7 +49,7 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
 
   Serial.print("New message on topic: ");
   Serial.println(topic);
-  if(strcmp(topic, fan_state_bath) != 0 || strcmp(topic, fan_state_toilet) != 0) {
+  if(strcmp(topic, bath_state_topic) != 0 && strcmp(topic, toilet_state_topic) != 0) {
     // Please note that you should always verify if the message's topic is the one you expect.
     // For example: if (memcmp(topic, "myCustomTopic") == 0) { ... }
     Serial.print("Not Expected topic!");
@@ -70,7 +70,7 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   } else if(strcmp(message, "OFF") == 0) {
     state = false;
   }
-  if(strcmp(topic, fan_state_bath) == 0) {
+  if(strcmp(topic, bath_state_topic) == 0) {
     relayBath = state;
   }
 
@@ -87,8 +87,8 @@ void onMqttConnected() {
   Serial.println("Connected to the broker! subscribing");
 
   // You can subscribe to custom topic if you need
-  mqtt.subscribe(fan_state_bath);
-  mqtt.subscribe(fan_state_toilet);
+  mqtt.subscribe(bath_state_topic);
+  mqtt.subscribe(toilet_state_topic);
   digitalWrite(LED, HIGH);
   connected = true;
 }
@@ -162,7 +162,7 @@ void setup() {
   buttonA.setName("Click stat");
 
   // Serial.println("Subscribing to topic...");
-  // if(mqtt.subscribe(fan_state_bath)) {
+  // if(mqtt.subscribe(bath_state_topic)) {
   //   Serial.println("Subscribed to topic");
   // } else {
   //   Serial.println("Failed to subscribe to topic");
@@ -202,6 +202,7 @@ void loop() {
     Serial.println(relayBath);
     button_pushed = true;
     mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayBath ? "OFF" : "ON"));
+    mqtt.publish("aha/toilet_fan/fan_switch_toilet/cmd_t", (relayToilet ? "OFF" : "ON"));
   }
 
   mqtt.loop();
