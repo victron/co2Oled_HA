@@ -70,8 +70,12 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   } else if(strcmp(message, "OFF") == 0) {
     state = false;
   }
+
   if(strcmp(topic, bath_state_topic) == 0) {
     relayBath = state;
+  }
+  if(strcmp(topic, toilet_state_topic) == 0) {
+    relayToilet = state;
   }
 
   button_pushed = false;
