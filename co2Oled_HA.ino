@@ -38,20 +38,21 @@ void onButtonCommand(HAButton* sender) {
   }
 }
 
-bool relayState = false;
 bool button_pushed = false;
-const char* fan_state_topic = "aha/bath_fan/fan_switch/stat_t";
+const char* fan_state_bath = "aha/bath_fan/fan_switch/stat_t";
+bool relayBath = false;
+const char* fan_state_toilet = "aha/toilet_fan/fan_switch_toilet/stat_t";
+bool relayToilet = false;
 
 void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   // This callback is called when message from MQTT broker is received.
 
   Serial.print("New message on topic: ");
   Serial.println(topic);
-  if(strcmp(topic, fan_state_topic) != 0) {
+  if(strcmp(topic, fan_state_bath) != 0 || strcmp(topic, fan_state_toilet) != 0) {
     // Please note that you should always verify if the message's topic is the one you expect.
     // For example: if (memcmp(topic, "myCustomTopic") == 0) { ... }
-    Serial.print("Expected topic: ");
-    Serial.println(fan_state_topic);
+    Serial.print("Not Expected topic!");
     return;
   }
   Serial.print("Data: ");
@@ -63,11 +64,16 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   Serial.print("Message: ");
   Serial.println(message);
 
+  bool state = false;
   if(strcmp(message, "ON") == 0) {
-    relayState = true;
+    state = true;
   } else if(strcmp(message, "OFF") == 0) {
-    relayState = false;
+    state = false;
   }
+  if(strcmp(topic, fan_state_bath) == 0) {
+    relayBath = state;
+  }
+
   button_pushed = false;
 }
 
@@ -81,7 +87,8 @@ void onMqttConnected() {
   Serial.println("Connected to the broker! subscribing");
 
   // You can subscribe to custom topic if you need
-  mqtt.subscribe(fan_state_topic);
+  mqtt.subscribe(fan_state_bath);
+  mqtt.subscribe(fan_state_toilet);
   digitalWrite(LED, HIGH);
   connected = true;
 }
@@ -155,7 +162,7 @@ void setup() {
   buttonA.setName("Click stat");
 
   // Serial.println("Subscribing to topic...");
-  // if(mqtt.subscribe(fan_state_topic)) {
+  // if(mqtt.subscribe(fan_state_bath)) {
   //   Serial.println("Subscribed to topic");
   // } else {
   //   Serial.println("Failed to subscribe to topic");
@@ -191,10 +198,10 @@ void loop() {
 
   // Перевірка натискання кнопки
   if(btn.click()) {
-    Serial.print("relayState: ");
-    Serial.println(relayState);
+    Serial.print("relayBath: ");
+    Serial.println(relayBath);
     button_pushed = true;
-    mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayState ? "OFF" : "ON"));
+    mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (relayBath ? "OFF" : "ON"));
   }
 
   mqtt.loop();
