@@ -38,7 +38,7 @@ void onButtonCommand(HAButton* sender) {
   }
 }
 
-bool button_pushed = false;
+const char* button_Led = " ";
 const char* bath_Led = "?";
 const char* bath_state_topic = "aha/bath_fan/fan_switch/stat_t";
 bool bathRelay = false;
@@ -54,7 +54,7 @@ void buttonAction() {
   if(!bathAvty && !toiletAvty) {
     bath_Led = "?";
     toilet_Led = "?";
-    button_pushed = false;
+    button_Led = " ";
     return;
   }
   if(!bathAvty) {
@@ -111,13 +111,13 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   if(strcmp(topic, bath_state_topic) == 0) {
     bathRelay = parseState(message);
     bath_Led = (bathRelay) ? "B" : ".";
-    button_pushed = false;
+    button_Led = " ";
     return;
   }
   if(strcmp(topic, toilet_state_topic) == 0) {
     toiletRelay = parseState(message);
     toilet_Led = (toiletRelay) ? "T" : ".";
-    button_pushed = false;
+    button_Led = " ";
     return;
   }
 
@@ -256,7 +256,7 @@ void loop() {
 
   // Перевірка натискання кнопки
   if(btn.click()) {
-    button_pushed = true;
+    button_Led = ">";
     buttonAction();
   }
 

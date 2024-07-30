@@ -3,11 +3,7 @@
 
 #include <Adafruit_SSD1306.h>
 
-extern bool bathRelay;
-extern bool bathAvty;
-extern bool toiletRelay;
-extern bool toiletAvty;
-extern bool button_pushed;
+extern const char* button_Led;
 extern const char* bath_Led;
 extern const char* toilet_Led;
 void init_oled();

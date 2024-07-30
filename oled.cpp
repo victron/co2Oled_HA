@@ -34,10 +34,7 @@ void handle_oled(uint16_t co2, float temperature, float humidity) {
   display->println(temperature);
   display->print("h%:");
   display->println(humidity);
-  String button_signal = (button_pushed) ? "B" : "-";
-  // String fanBath = (bathRelay) ? "B" : "_";
-  // String fanToilet = (toiletRelay) ? "T" : "_";
-  display->printf("%s      %s%s\n", button_signal, bath_Led, toilet_Led);
+  display->printf("%s      %s%s\n", button_Led, bath_Led, toilet_Led);
 
   display->display();
 }
