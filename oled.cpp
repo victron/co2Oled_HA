@@ -30,11 +30,9 @@ void handle_oled(uint16_t co2, float temperature, float humidity) {
 
   display->print("CO2: ");
   if(co2 > highCO2level) {
-    if((millis() / 1000) % 2) {
-      display->println(co2);
-    } else {
-      display->println("");
-    }
+    display->println((millis() / 1000) % 2 ? String(co2) : "");
+  } else {
+    display->println(co2);
   }
 
   display->print("tC:");
