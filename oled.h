@@ -3,6 +3,8 @@
 
 #include <Adafruit_SSD1306.h>
 
+#include "config.h"
+
 extern const char* button_Led;
 extern const char* bath_Led;
 extern const char* toilet_Led;

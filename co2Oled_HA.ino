@@ -6,12 +6,10 @@
 #include "OTAHandler.h"
 #include "button.h"
 #include "co2sensor.h"
+#include "config.h"
 #include "ha_functions.h"
 #include "oled.h"
 
-#define HOSTNAME "co2"
-#define BUTTON_PIN 13
-#define LED 2
 bool connected = false;
 // globals for sensor
 uint16_t co2 = 0;
