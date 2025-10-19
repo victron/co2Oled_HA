@@ -12,7 +12,7 @@ pio --version # check
 ### fetch repo
 ```
 cd ~/ota_update_pio/
-. src/secrets.sh
+export PAT='.......'
 git clone https://${PAT}@github.com/victron/co2Oled_HA.git
 mv co2Oled_HA co2OledHAtemp
 cd co2OledHAtemp/
@@ -28,6 +28,7 @@ cd co2OledHAtemp/
 # check ip -- sudo cat /var/lib/NetworkManager/dnsmasq-wlp3s0.leases
 # add it to /etc/NetworkManager/dnsmasq-shared.d/static-leases.conf
 
+. ~/platformIO/bin/activate
 pio pkg install
 pio pkg list
 ```

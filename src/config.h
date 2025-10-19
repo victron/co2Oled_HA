@@ -1,7 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define HOSTNAME "co2"
 #define BUTTON_PIN 13
 #define LED 2
 
