@@ -10,7 +10,7 @@
 #define OLED_SDA D5          // Stock firmware shows wrong pins
 #define OLED_SCL D6          // They swap SDA with SCL ;)
 
-Adafruit_SSD1306 *display;
+Adafruit_SSD1306* display;
 void init_oled() {
   display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
   // // OLED used nonstandard SDA and SCL pins
@@ -39,7 +39,6 @@ void handle_oled(uint16_t co2, float temperature, float humidity) {
   display->println(temperature);
   display->print("h%:");
   display->println(humidity);
-  display->printf("%s      %s%s\n", button_Led, bath_Led, toilet_Led);
 
   display->display();
 }

@@ -10,6 +10,11 @@
 #include "ha_functions.h"
 #include "oled.h"
 
+#define RELAY_PIN 5
+#define BUTTON_DOWN 4
+#define BUTTON_UP 13
+#define LED 2
+
 bool connected = false;
 // globals for sensor
 uint16_t co2 = 0;
@@ -28,69 +33,13 @@ HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 
 HAButton buttonA("button1");
-button btn(BUTTON_PIN);
+button btn2(BUTTON_UP);
+button btn1(BUTTON_DOWN);
 
 void onButtonCommand(HAButton* sender) {
   if(sender == &buttonA) {
     // для моніторингу
   }
-}
-
-const char* button_Led = " ";
-const char* bath_Led = "?";
-const char* bath_state_topic = "aha/bath_fan/fan_switch/stat_t";
-bool bathRelay = false;
-const char* bath_avty_topic = "aha/bath_fan/avty_t";
-bool bathAvty = false;
-const char* toilet_Led = "?";
-const char* toilet_state_topic = "aha/toilet_fan/fan_switch_toilet/stat_t";
-bool toiletRelay = false;
-const char* toilet_avty_topic = "aha/toilet_fan/avty_t";
-bool toiletAvty = false;
-
-void buttonAction() {
-  if(!bathAvty && !toiletAvty) {
-    bath_Led = "?";
-    toilet_Led = "?";
-    button_Led = " ";
-    return;
-  }
-  if(!bathAvty) {
-    bath_Led = "?";
-    toilet_Led = "^";
-    mqtt.publish("aha/toilet_fan/fan_switch_toilet/cmd_t", (toiletRelay ? "OFF" : "ON"));
-    return;
-  }
-  if(!toiletAvty) {
-    toilet_Led = "?";
-    bath_Led = "^";
-    mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (bathRelay ? "OFF" : "ON"));
-    return;
-  }
-  // && щоб вимикати якщо один вкл інший викл. (all available)
-  bool allRelay = bathRelay && toiletRelay;
-  bath_Led = "^";
-  toilet_Led = "^";
-  mqtt.publish("aha/toilet_fan/fan_switch_toilet/cmd_t", (allRelay ? "OFF" : "ON"));
-  mqtt.publish("aha/bath_fan/fan_switch/cmd_t", (allRelay ? "OFF" : "ON"));
-}
-
-bool parseState(const char* message) {
-  if(strcmp(message, "ON") == 0) {
-    return true;
-  } else if(strcmp(message, "OFF") == 0) {
-    return false;
-  }
-  return false;
-}
-
-bool parseAvty(const char* message) {
-  if(strcmp(message, "online") == 0) {
-    return true;
-  } else if(strcmp(message, "offline") == 0) {
-    return false;
-  }
-  return false;
 }
 
 void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
@@ -105,30 +54,6 @@ void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   message[length] = '\0';
   Serial.print("Message: ");
   Serial.println(message);
-
-  if(strcmp(topic, bath_state_topic) == 0) {
-    bathRelay = parseState(message);
-    bath_Led = (bathRelay) ? "B" : ".";
-    button_Led = " ";
-    return;
-  }
-  if(strcmp(topic, toilet_state_topic) == 0) {
-    toiletRelay = parseState(message);
-    toilet_Led = (toiletRelay) ? "T" : ".";
-    button_Led = " ";
-    return;
-  }
-
-  if(strcmp(topic, bath_avty_topic) == 0) {
-    bathAvty = parseAvty(message);
-    bath_Led = (bathAvty) ? bath_Led : "?";
-    return;
-  }
-  if(strcmp(topic, toilet_avty_topic) == 0) {
-    toiletAvty = parseAvty(message);
-    toilet_Led = (toiletAvty) ? toilet_Led : "?";
-    return;
-  }
 }
 
 void onMqttConnected() {
@@ -140,11 +65,6 @@ void onMqttConnected() {
   // mqtt.onStateChanged(onMqttStateChanged);
   Serial.println("Connected to the broker! subscribing");
 
-  // You can subscribe to custom topic if you need
-  mqtt.subscribe(bath_state_topic);
-  mqtt.subscribe(bath_avty_topic);
-  mqtt.subscribe(toilet_state_topic);
-  mqtt.subscribe(toilet_avty_topic);
   digitalWrite(LED, HIGH);
   connected = true;
 }
@@ -217,15 +137,6 @@ void setup() {
   buttonA.setIcon("mdi:fan-alert");
   buttonA.setName("Click stat");
 
-  // Serial.println("Subscribing to topic...");
-  // if(mqtt.subscribe(bath_state_topic)) {
-  //   Serial.println("Subscribed to topic");
-  // } else {
-  //   Serial.println("Failed to subscribe to topic");
-  //   Serial.print("MQTT subscription state: ");
-  //   Serial.println(mqtt.getState());
-  // }
-  // press callbacks
   // Ініціалізація OTA з паролем
   setupOTA(HOSTNAME, OTA_PASSWORD);
 }
@@ -233,6 +144,7 @@ void setup() {
 unsigned long lastUpdateAt = 0;
 unsigned int wifi_fail_counter = 0;
 const unsigned int wifi_fail_triger = 300000;  // при кількості спроб реконнест
+
 void loop() {
   if(!connected && WiFi.status() == WL_CONNECTED) {
     // not mqtt and connected to wifi
@@ -250,12 +162,6 @@ void loop() {
     Serial.print("WiFi lost, counter=");
     Serial.println(wifi_fail_counter);
     return;
-  }
-
-  // Перевірка натискання кнопки
-  if(btn.click()) {
-    button_Led = ">";
-    buttonAction();
   }
 
   mqtt.loop();

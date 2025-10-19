@@ -1,5 +1,5 @@
 #include "ha_functions.h"
-void init_ha(WiFiClient &client, HADevice &device, HAMqtt &mqtt, HASensorNumber &co2Sensor, HASensorNumber &tempSensor, HASensorNumber &humSensor) {
+void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber& co2Sensor, HASensorNumber& tempSensor, HASensorNumber& humSensor) {
   // Unique ID must be set!
   byte mac[WL_MAC_ADDR_LENGTH];
   WiFi.macAddress(mac);
@@ -35,13 +35,6 @@ void init_ha(WiFiClient &client, HADevice &device, HAMqtt &mqtt, HASensorNumber 
     Serial.println("Failed to connect to MQTT broker");
   }
 
-  if(mqtt.subscribe("aha/bath_fan/fan_switch/stat_t")) {
-    Serial.println("Subscribed to topic");
-  } else {
-    Serial.println("Failed to subscribe to topic");
-    Serial.print("MQTT subscription state: ");
-    Serial.println(mqtt.getState());
-  }
   device.enableSharedAvailability();
   device.enableLastWill();
 }
