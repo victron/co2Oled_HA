@@ -8,6 +8,7 @@
 #include "co2sensor.h"
 #include "config.h"
 #include "ha_functions.h"
+#include "heater.h"
 #include "oled.h"
 
 #define RELAY_PIN 5
@@ -22,6 +23,11 @@ float temperature = 0.0f;
 float humidity = 0.0f;
 bool isDataReady = false;
 
+bool heaterOn = false;
+float coverTemp = 20.0f;
+const float hysteresis = 3.0f;
+const float maxTemp = 60.0f;
+
 // globals for HA
 WiFiClient client;
 HADevice device;
@@ -31,6 +37,9 @@ HASensorNumber tempSensor("temperature", HASensorNumber::PrecisionP2);
 HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
 HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
+HASensorNumber tempCover("tempCover", HASensorNumber::PrecisionP1);
+HABinarySensor heaterOnHA("heater_on");
+HANumber targetTemp("target_temp", HANumber::PrecisionP0);
 
 HAButton buttonA("button1");
 button btn2(BUTTON_UP);
@@ -170,7 +179,7 @@ void loop() {
   if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
-    handle_oled(co2, temperature, humidity);
+    handle_oled(co2, readTemperature(), humidity);
 
     if(isDataReady) {
       co2Sensor.setValue(co2);
