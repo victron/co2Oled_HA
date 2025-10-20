@@ -6,7 +6,7 @@
 // Константи для термістора
 const float THERMISTOR_NOMINAL_RESISTANCE = 10000.0;  // Номінальний опір при 25°C (10K Ohm)
 const float THERMISTOR_B_VALUE = 3950.0;              // B value термістора (3950K)
-const float TEMPERATURE_NOMINAL = 25.0 + 29.0;        // Номінальна температура (25°C)
+const float TEMPERATURE_NOMINAL = 25.0;               // Номінальна температура (25°C)
 const float ESP8266_MAX_VOLTAGE = 1.0;                // Максимальна вхідна напруга на АЦП ESP8266
 const float ESP8266_ADC_RESOLUTION = 1023.0;          // Роздільна здатність АЦП ESP8266
 

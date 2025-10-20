@@ -1,5 +1,5 @@
 #include "ha_functions.h"
-void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber& co2Sensor, HASensorNumber& tempSensor, HASensorNumber& humSensor, HASensorNumber& tempCover) {
+void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber& co2Sensor, HASensorNumber& tempSensor, HASensorNumber& humSensor) {
   // Unique ID must be set!
   byte mac[WL_MAC_ADDR_LENGTH];
   WiFi.macAddress(mac);
@@ -28,9 +28,6 @@ void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber&
   humSensor.setIcon("mdi:water-percent");
   humSensor.setName("humidity");
   humSensor.setUnitOfMeasurement("%");
-  tempCover.setIcon("mdi:thermometer");
-  tempCover.setName("tempCover");
-  tempCover.setUnitOfMeasurement("°C");
 
   if(mqtt.begin(BROKER_ADDR, MQTT_USERNAME, MQTT_PASSWORD)) {
     Serial.println("Connected to MQTT broker");

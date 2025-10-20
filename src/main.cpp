@@ -38,6 +38,7 @@ HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
 HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber tempCover("tempCover", HASensorNumber::PrecisionP1);
+HASensorNumber tempValue("tempValue", HASensorNumber::PrecisionP0);
 HABinarySensor heaterOnHA("heater_on");
 HANumber targetTemp("target_temp", HANumber::PrecisionP0);
 
@@ -133,7 +134,12 @@ void setup() {
   mqtt.onConnected(onMqttConnected);
   mqtt.onDisconnected(onMqttDisconnected);
   mqtt.onStateChanged(onMqttStateChanged);
-  init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor, tempCover);
+  init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
+  tempCover.setIcon("mdi:thermometer");
+  tempCover.setName("tempCover");
+  tempCover.setUnitOfMeasurement("°C");
+
+  tempValue.setName("tempValue");
 
   wifiLostCount.setIcon("mdi:gauge");
   wifiLostCount.setName("WIFI lost count");
@@ -186,6 +192,7 @@ void loop() {
       tempSensor.setValue(temperature);
       humSensor.setValue(humidity);
       tempCover.setValue(readTemperature());
+      tempValue.setValue(analogRead(0));  // для моніторингу
     }
 
     lastUpdateAt = millis();

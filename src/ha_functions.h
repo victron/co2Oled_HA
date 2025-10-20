@@ -5,6 +5,6 @@
 
 #include "secrets.h"
 
-void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber& co2Sensor, HASensorNumber& tempSensor, HASensorNumber& humSensor, HASensorNumber& tempCover);
+void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber& co2Sensor, HASensorNumber& tempSensor, HASensorNumber& humSensor);
 
 // #endif
