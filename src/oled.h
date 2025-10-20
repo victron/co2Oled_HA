@@ -6,6 +6,6 @@
 const uint16_t highCO2level = 1200;
 
 void init_oled();
-void handle_oled(uint16_t co2, float temperature, float humidity);
+void handle_oled(uint16_t co2, float tempCO2, float humidity, float tempCover);
 
 #endif

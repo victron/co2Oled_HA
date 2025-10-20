@@ -22,7 +22,7 @@ void init_oled() {
   }
 }
 
-void handle_oled(uint16_t co2, float temperature, float humidity) {
+void handle_oled(uint16_t co2, float tempCO2, float humidity, float tempCover) {
   display->clearDisplay();
   display->setTextSize(2);
   display->setTextColor(SSD1306_WHITE);
@@ -36,9 +36,11 @@ void handle_oled(uint16_t co2, float temperature, float humidity) {
   }
 
   display->print("tC:");
-  display->println(temperature);
+  display->println(tempCO2);
   display->print("h%:");
   display->println(humidity);
+  display->print("t:");
+  display->println(tempCover);
 
   display->display();
 }

@@ -133,7 +133,7 @@ void setup() {
   mqtt.onConnected(onMqttConnected);
   mqtt.onDisconnected(onMqttDisconnected);
   mqtt.onStateChanged(onMqttStateChanged);
-  init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
+  init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor, tempCover);
 
   wifiLostCount.setIcon("mdi:gauge");
   wifiLostCount.setName("WIFI lost count");
@@ -179,12 +179,13 @@ void loop() {
   if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
-    handle_oled(co2, readTemperature(), humidity);
+    handle_oled(co2, temperature, humidity, readTemperature());
 
     if(isDataReady) {
       co2Sensor.setValue(co2);
       tempSensor.setValue(temperature);
       humSensor.setValue(humidity);
+      tempCover.setValue(readTemperature());
     }
 
     lastUpdateAt = millis();
