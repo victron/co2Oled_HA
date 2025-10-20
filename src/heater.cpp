@@ -42,61 +42,40 @@
 // Константи для калібрування термістора (на основі history.csv)
 const int NUM_POINTS = 40;  // Використовуємо 100 точок
 // Масив значень ADC (монотонно зростає з температурою)
-const int adcValues[NUM_POINTS] PROGMEM = {
+const int adcValues[NUM_POINTS] = {
     501, 502, 503, 504, 505, 506, 507, 508, 519, 533,
     544, 555, 567, 583, 596, 600, 616, 629, 639, 655,
     670, 683, 698, 718, 733, 743, 762, 778, 792, 802,
     817, 832, 847, 861, 875, 890, 904, 919, 933, 947};
 
 // Масив відповідних температур (°C)
-const float temperatures[NUM_POINTS] PROGMEM = {
+// Зберігається в RAM для швидкого доступу
+const float temperatures[NUM_POINTS] = {
     12.0f, 14.0f, 16.0f, 18.0f, 20.0f, 22.0f, 24.0f, 26.0f, 28.0f, 30.0f,
     32.0f, 34.0f, 36.0f, 38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 48.0f, 50.0f,
     52.0f, 54.0f, 56.0f, 58.0f, 60.0f, 62.0f, 64.0f, 66.0f, 68.0f, 70.0f,
     72.0f, 74.0f, 76.0f, 78.0f, 80.0f, 82.0f, 84.0f, 86.0f, 88.0f, 90.0f};
 
 // Функція для перетворення ADC в температуру з лінійною інтерполяцією
+// Ідентична вашій оригінальній функції
 float getTemperatureFromADC(int adcValue) {
-  // Перевірка меж
-  if(adcValue < adcValues[0]) {
-    // Екстраполяція нижче мінімуму (обережно!)
-    float slope = (temperatures[1] - temperatures[0]) /
-                  (float)(adcValues[1] - adcValues[0]);
-    return temperatures[0] + slope * (adcValue - adcValues[0]);
-  }
+  // Обмеження adcValue в межах таблиці
+  adcValue = max(adcValue, adcValues[0]);
+  adcValue = min(adcValue, adcValues[NUM_POINTS - 1]);
 
-  if(adcValue > adcValues[NUM_POINTS - 1]) {
-    // Екстраполяція вище максимуму (обережно!)
-    float slope = (temperatures[NUM_POINTS - 1] - temperatures[NUM_POINTS - 2]) /
-                  (float)(adcValues[NUM_POINTS - 1] - adcValues[NUM_POINTS - 2]);
-    return temperatures[NUM_POINTS - 1] + slope * (adcValue - adcValues[NUM_POINTS - 1]);
-  }
-
-  // Бінарний пошук для оптимізації (можна залишити лінійний для простоти)
   // Лінійний пошук та інтерполяція
   for(int i = 0; i < NUM_POINTS - 1; i++) {
     if(adcValue >= adcValues[i] && adcValue <= adcValues[i + 1]) {
-      // Лінійна інтерполяція
-      float fraction = (float)(adcValue - adcValues[i]) /
-                       (float)(adcValues[i + 1] - adcValues[i]);
+      float fraction = (float)(adcValue - adcValues[i]) / (adcValues[i + 1] - adcValues[i]);
       return temperatures[i] + fraction * (temperatures[i + 1] - temperatures[i]);
     }
   }
-
-  return -273.15;  // Помилка (абсолютний нуль)
+  return -1000.0;  // Помилка
 }
 
 // Функція для зчитування температури
+// Ідентична вашій оригінальній функції
 float readTemperature() {
-  // Усереднення для зменшення шуму (рекомендується)
-  long sum = 0;
-  const int samples = 10;
-
-  for(int i = 0; i < samples; i++) {
-    sum += analogRead(THERMISTOR_PIN);
-    delay(5);  // Невелика затримка між зчитуваннями
-  }
-
-  int avgADC = sum / samples;
-  return getTemperatureFromADC(avgADC);
+  int sensorValue = analogRead(THERMISTOR_PIN);
+  return getTemperatureFromADC(sensorValue);
 }
