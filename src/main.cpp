@@ -140,6 +140,7 @@ void setup() {
   tempCover.setUnitOfMeasurement("°C");
 
   tempValue.setName("tempValue");
+  tempValue.setUnitOfMeasurement("n");
 
   wifiLostCount.setIcon("mdi:gauge");
   wifiLostCount.setName("WIFI lost count");
