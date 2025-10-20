@@ -55,22 +55,48 @@ const float temperatures[NUM_POINTS] PROGMEM = {
     52.0f, 54.0f, 56.0f, 58.0f, 60.0f, 62.0f, 64.0f, 66.0f, 68.0f, 70.0f,
     72.0f, 74.0f, 76.0f, 78.0f, 80.0f, 82.0f, 84.0f, 86.0f, 88.0f, 90.0f};
 
+// Функція для перетворення ADC в температуру з лінійною інтерполяцією
 float getTemperatureFromADC(int adcValue) {
-  // Обмеження adcValue в межах таблиці
-  adcValue = std::max(adcValue, adcValues[0]);
-  adcValue = std::min(adcValue, adcValues[NUM_POINTS - 1]);
+  // Перевірка меж
+  if(adcValue < adcValues[0]) {
+    // Екстраполяція нижче мінімуму (обережно!)
+    float slope = (temperatures[1] - temperatures[0]) /
+                  (float)(adcValues[1] - adcValues[0]);
+    return temperatures[0] + slope * (adcValue - adcValues[0]);
+  }
 
+  if(adcValue > adcValues[NUM_POINTS - 1]) {
+    // Екстраполяція вище максимуму (обережно!)
+    float slope = (temperatures[NUM_POINTS - 1] - temperatures[NUM_POINTS - 2]) /
+                  (float)(adcValues[NUM_POINTS - 1] - adcValues[NUM_POINTS - 2]);
+    return temperatures[NUM_POINTS - 1] + slope * (adcValue - adcValues[NUM_POINTS - 1]);
+  }
+
+  // Бінарний пошук для оптимізації (можна залишити лінійний для простоти)
   // Лінійний пошук та інтерполяція
   for(int i = 0; i < NUM_POINTS - 1; i++) {
     if(adcValue >= adcValues[i] && adcValue <= adcValues[i + 1]) {
-      float fraction = (float)(adcValue - adcValues[i]) / (adcValues[i + 1] - adcValues[i]);
+      // Лінійна інтерполяція
+      float fraction = (float)(adcValue - adcValues[i]) /
+                       (float)(adcValues[i + 1] - adcValues[i]);
       return temperatures[i] + fraction * (temperatures[i + 1] - temperatures[i]);
     }
   }
-  return -1000.0;  // Помилка
+
+  return -273.15;  // Помилка (абсолютний нуль)
 }
 
+// Функція для зчитування температури
 float readTemperature() {
-  int sensorValue = analogRead(THERMISTOR_PIN);
-  return getTemperatureFromADC(sensorValue);
+  // Усереднення для зменшення шуму (рекомендується)
+  long sum = 0;
+  const int samples = 10;
+
+  for(int i = 0; i < samples; i++) {
+    sum += analogRead(THERMISTOR_PIN);
+    delay(5);  // Невелика затримка між зчитуваннями
+  }
+
+  int avgADC = sum / samples;
+  return getTemperatureFromADC(avgADC);
 }
