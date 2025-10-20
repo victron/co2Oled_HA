@@ -5,5 +5,6 @@
 #include <Arduino.h>
 
 float readTemperature();
+float getTemperatureFromADC(int adcValue);
 
 #endif
