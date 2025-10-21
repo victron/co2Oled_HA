@@ -186,13 +186,14 @@ void loop() {
   if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
-    handle_oled(co2, temperature, humidity, readTemperature());
+    coverTemp = readTemperature();  // call it ones per loop
+    handle_oled(co2, temperature, humidity, coverTemp);
 
     if(isDataReady) {
       co2Sensor.setValue(co2);
       tempSensor.setValue(temperature);
       humSensor.setValue(humidity);
-      tempCover.setValue(readTemperature());
+      tempCover.setValue(coverTemp);
       tempValue.setValue(analogRead(0));  // для моніторингу
     }
 
