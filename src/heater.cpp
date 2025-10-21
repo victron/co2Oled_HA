@@ -96,7 +96,7 @@ float getTemperatureFromADC(int adcValue) {
 
 // Функція для зчитування температури
 // З примітивним усередненням для покращення якості
-float readTemperature(int samples = 20) {
+float readTemperature(int samples) {
   long sum = 0;
 
   for(int i = 0; i < samples; i++) {
