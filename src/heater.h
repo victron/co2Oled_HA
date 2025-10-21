@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-float readTemperature();
+float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);
 
 #endif
