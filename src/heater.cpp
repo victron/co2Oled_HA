@@ -37,45 +37,73 @@
 // }
 // -------------------------------------------------
 
-// -------- Lookup Table Method Implementation --------
+// ============================================================
+// КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
+// ============================================================
 
-// Константи для калібрування термістора (на основі history.csv)
-const int NUM_POINTS = 40;  // Використовуємо 100 точок
-// Масив значень ADC (монотонно зростає з температурою)
-const int adcValues[NUM_POINTS] = {
-    501, 502, 503, 504, 505, 506, 507, 508, 519, 533,
-    544, 555, 567, 583, 596, 600, 616, 629, 639, 655,
-    670, 683, 698, 718, 733, 743, 762, 778, 792, 802,
-    817, 832, 847, 861, 875, 890, 904, 919, 933, 947};
+// float a0 = 5.6283822058;
+// float a1 = -1.4457510413e-01;
+// float a2 = 5.1145811076e-04;
+// float a3 = -2.8784432962e-07;
 
-// Масив відповідних температур (°C)
-// Зберігається в RAM для швидкого доступу
-const float temperatures[NUM_POINTS] = {
-    12.0f, 14.0f, 16.0f, 18.0f, 20.0f, 22.0f, 24.0f, 26.0f, 28.0f, 30.0f,
-    32.0f, 34.0f, 36.0f, 38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 48.0f, 50.0f,
-    52.0f, 54.0f, 56.0f, 58.0f, 60.0f, 62.0f, 64.0f, 66.0f, 68.0f, 70.0f,
-    72.0f, 74.0f, 76.0f, 78.0f, 80.0f, 82.0f, 84.0f, 86.0f, 88.0f, 90.0f};
+// Код для ESP8266:
+// ------------------------------------------------------------
 
-// Функція для перетворення ADC в температуру з лінійною інтерполяцією
-// Ідентична вашій оригінальній функції
+// float adc_to_temp(int adc) {
+//     float x = (float)adc;
+//     float x2 = x * x;
+//     float x3 = x2 * x;
+
+//     return a0 + a1*x + a2*x2 + a3*x3;
+// }
+
+// ============================================================
+// КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 4-ГО СТУПЕНЯ
+// ============================================================
+
+// float a0 = 456.2409054740;
+// float a1 = -3.1286816344e+00;
+// float a2 = 7.7992566178e-03;
+// float a3 = -8.0640401703e-06;
+// float a4 = 3.0590941788e-09;
+
+// Безпечний діапазон ADC
+#define ADC_MIN_SAFE 430
+#define ADC_MAX_SAFE 850
+
+// Коефіцієнти полінома 4-го ступеня
+const float a0 = 456.2409054740;
+const float a1 = -3.1286816344e+00;
+const float a2 = 7.7992566178e-03;
+const float a3 = -8.0640401703e-06;
+const float a4 = 3.0590941788e-09;
+
+// Конвертація ADC → температура
 float getTemperatureFromADC(int adcValue) {
-  // Обмеження adcValue в межах таблиці
-  adcValue = max(adcValue, adcValues[0]);
-  adcValue = min(adcValue, adcValues[NUM_POINTS - 1]);
-
-  // Лінійний пошук та інтерполяція
-  for(int i = 0; i < NUM_POINTS - 1; i++) {
-    if(adcValue >= adcValues[i] && adcValue <= adcValues[i + 1]) {
-      float fraction = (float)(adcValue - adcValues[i]) / (adcValues[i + 1] - adcValues[i]);
-      return temperatures[i] + fraction * (temperatures[i + 1] - temperatures[i]);
-    }
+  // Перевірка на небезпечні зони
+  if(adcValue < ADC_MIN_SAFE || adcValue > ADC_MAX_SAFE) {
+    return 1000.0f;
   }
-  return -1000.0;  // Помилка
+
+  // Поліном 4-го ступеня: T = a0 + a1*x + a2*x² + a3*x³ + a4*x⁴
+  float x = (float)adcValue;
+  float x2 = x * x;
+  float x3 = x2 * x;
+  float x4 = x2 * x2;
+
+  return a0 + a1 * x + a2 * x2 + a3 * x3 + a4 * x4;
 }
 
 // Функція для зчитування температури
-// Ідентична вашій оригінальній функції
-float readTemperature() {
-  int sensorValue = analogRead(THERMISTOR_PIN);
-  return getTemperatureFromADC(sensorValue);
+// З примітивним усередненням для покращення якості
+float readTemperature(int samples = 20) {
+  long sum = 0;
+
+  for(int i = 0; i < samples; i++) {
+    sum += analogRead(THERMISTOR_PIN);
+    delayMicroseconds(200);  // Компроміс швидкості та якості
+  }
+  // Загальний час: ~4-5 мс (дуже швидко!)
+
+  return getTemperatureFromADC(sum / samples);
 }
