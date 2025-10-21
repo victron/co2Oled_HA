@@ -11,9 +11,6 @@
 #include "heater.h"
 #include "oled.h"
 
-#define RELAY_PIN 5
-#define BUTTON_DOWN 4
-#define BUTTON_UP 13
 #define LED 2
 
 bool connected = false;
@@ -24,9 +21,6 @@ float humidity = 0.0f;
 bool isDataReady = false;
 
 bool heaterOn = false;
-float coverTemp = 20.0f;
-const float hysteresis = 3.0f;
-const float maxTemp = 60.0f;
 
 // globals for HA
 WiFiClient client;
@@ -40,17 +34,10 @@ HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber tempCover("tempCover", HASensorNumber::PrecisionP1);
 HASensorNumber tempValue("tempValue", HASensorNumber::PrecisionP0);
 HABinarySensor heaterOnHA("heater_on");
-HANumber targetTemp("target_temp", HANumber::PrecisionP0);
+HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
 
-HAButton buttonA("button1");
 button btn2(BUTTON_UP);
 button btn1(BUTTON_DOWN);
-
-void onButtonCommand(HAButton* sender) {
-  if(sender == &buttonA) {
-    // для моніторингу
-  }
-}
 
 void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   // This callback is called when message from MQTT broker is received.
@@ -129,7 +116,7 @@ void setup() {
 
   init_oled();
   init_sensor();
-  buttonA.onCommand(onButtonCommand);
+
   mqtt.onMessage(onMqttMessage);
   mqtt.onConnected(onMqttConnected);
   mqtt.onDisconnected(onMqttDisconnected);
@@ -138,6 +125,10 @@ void setup() {
   tempCover.setIcon("mdi:thermometer");
   tempCover.setName("tempCover");
   tempCover.setUnitOfMeasurement("°C");
+
+  targetTempHA.setIcon("mdi:thermometer");
+  targetTempHA.setName("targetTemp");
+  targetTempHA.setUnitOfMeasurement("°C");
 
   tempValue.setName("tempValue");
   tempValue.setUnitOfMeasurement("n");
@@ -150,8 +141,8 @@ void setup() {
   wifiRssi.setName("WIFI RSSI");
   wifiRssi.setUnitOfMeasurement("dBm");
 
-  buttonA.setIcon("mdi:fan-alert");
-  buttonA.setName("Click stat");
+  heaterOnHA.setIcon("mdi:water-boiler");
+  heaterOnHA.setName("heater status");
 
   // Ініціалізація OTA з паролем
   setupOTA(HOSTNAME, OTA_PASSWORD);
@@ -160,6 +151,9 @@ void setup() {
 unsigned long lastUpdateAt = 0;
 unsigned int wifi_fail_counter = 0;
 const unsigned int wifi_fail_triger = 300000;  // при кількості спроб реконнест
+
+unsigned long lastThermoUpdate = 0;
+const unsigned long THERMO_INTERVAL = 2000;  // 2 секунди для термостату
 
 void loop() {
   if(!connected && WiFi.status() == WL_CONNECTED) {
@@ -182,18 +176,21 @@ void loop() {
 
   mqtt.loop();
   ArduinoOTA.handle();
+  // КНОПКИ - викликаємо в кожному циклі для швидкого відгуку
+  handleButtons();
 
+  // TODO: скидувати таймер при нажиманні кнопок
   if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
-    coverTemp = readTemperature();  // call it ones per loop
-    handle_oled(co2, temperature, humidity, coverTemp);
+    currentTemp = readTemperature();  // call it ones per loop
+    handle_oled(co2, temperature, humidity, currentTemp);
 
     if(isDataReady) {
       co2Sensor.setValue(co2);
       tempSensor.setValue(temperature);
       humSensor.setValue(humidity);
-      tempCover.setValue(coverTemp);
+      tempCover.setValue(currentTemp);
       tempValue.setValue(analogRead(0));  // для моніторингу
     }
 
@@ -204,5 +201,15 @@ void loop() {
 
     int8_t rssi = WiFi.RSSI();
     wifiRssi.setValue(rssi);
+  }
+
+  // ТЕРМОСТАТ - окремий таймер (2 секунди)
+  if(millis() - lastThermoUpdate >= THERMO_INTERVAL) {
+    lastThermoUpdate = millis();
+    updateThermostat();
+
+    // Можеш публікувати стан термостату в MQTT
+    heaterOnHA.setState(relayState);
+    targetTempHA.setValue(targetTemp);
   }
 }
