@@ -1,5 +1,15 @@
 #include "heater.h"
 
+// ВИЗНАЧЕННЯ глобальних змінних - тільки тут, один раз!
+ThermoState currentState = IDLE;
+float targetTemp = 22.0f;
+float currentTemp = 1001.0f;
+bool relayState = false;
+const float HYSTERESIS = 2.0f;
+
+unsigned long lastButtonPress = 0;
+const unsigned long SETTING_TIMEOUT = 3000;
+
 // ============================================================
 // КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
 // ============================================================
@@ -59,14 +69,6 @@ float readTemperature(int samples) {
 
   return getTemperatureFromADC(sum / samples);
 }
-
-// Стани терморегулятора
-enum ThermoState {
-  IDLE,     // Початковий стан
-  HEATING,  // Активний нагрів
-  COOLING,  // Очікування охолодження
-  SETTING   // Режим налаштування temperature
-};
 
 // State Machine - чиста логіка без таймерів
 void updateThermostat() {

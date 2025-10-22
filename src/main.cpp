@@ -4,7 +4,6 @@
 #include <Wire.h>
 
 #include "OTAHandler.h"
-#include "button.h"
 #include "co2sensor.h"
 #include "config.h"
 #include "ha_functions.h"

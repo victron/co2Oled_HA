@@ -21,16 +21,23 @@ const float a2 = 7.7992566178e-03;
 const float a3 = -8.0640401703e-06;
 const float a4 = 3.0590941788e-09;
 
-// Глобальні змінні стану
-ThermoState currentState = IDLE;
-float targetTemp = 22.0f;       // Цільова температура
-float currentTemp = 1001.0f;    // Поточна температура
-bool relayState = false;        // Стан реле (false = OFF, true = ON)
-const float HYSTERESIS = 2.0f;  // Гістерезис для уникнення тріпання реле
+// Стани терморегулятора
+enum ThermoState {
+  IDLE,
+  HEATING,
+  COOLING,
+  SETTING
+};
 
-// Для автоматичного виходу з SETTING
-unsigned long lastButtonPress = 0;
-const unsigned long SETTING_TIMEOUT = 3000;  // 3 секунди без натискань
+// ОГОЛОШЕННЯ (extern) - кажемо що вони існують десь
+extern ThermoState currentState;
+extern float targetTemp;
+extern float currentTemp;
+extern bool relayState;
+extern const float HYSTERESIS;
+
+extern unsigned long lastButtonPress;
+extern const unsigned long SETTING_TIMEOUT;
 
 float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);
