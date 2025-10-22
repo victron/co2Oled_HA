@@ -36,20 +36,6 @@ HABinarySensor heaterOnHA("heater_on");
 // HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
 HANumber targetTempHA("target_temp", HANumber::PrecisionP1);
 
-void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
-  // This callback is called when message from MQTT broker is received.
-  Serial.print("New message on topic: ");
-  Serial.println(topic);
-  // parse data
-  Serial.print("Data: ");
-  Serial.println((const char*)payload);
-  char message[length + 1];
-  memcpy(message, payload, length);
-  message[length] = '\0';
-  Serial.print("Message: ");
-  Serial.println(message);
-}
-
 void onMqttConnected() {
   // Please note that you need to subscribe topic each time the connection with the broker is acquired.
   // in this reason all below callbacks needed
@@ -66,11 +52,6 @@ void onMqttConnected() {
 void onMqttDisconnected() {
   Serial.println("Disconnected from the broker!");
   connected = false;
-}
-
-void onMqttStateChanged(HAMqtt::ConnectionState state) {
-  Serial.print("MQTT state changed to: ");
-  Serial.println(static_cast<int8_t>(state));
 }
 
 void setupWiFi() {
@@ -117,10 +98,8 @@ void setup() {
   init_oled();
   init_sensor();
 
-  mqtt.onMessage(onMqttMessage);
   mqtt.onConnected(onMqttConnected);
   mqtt.onDisconnected(onMqttDisconnected);
-  mqtt.onStateChanged(onMqttStateChanged);
   init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
   currentTempHA.setIcon("mdi:thermometer");
   currentTempHA.setName("currentTempHA");
