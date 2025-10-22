@@ -123,11 +123,11 @@ void setup() {
   targetTempHA.setIcon("mdi:heating-coil");
   targetTempHA.setName("blanket target");
   targetTempHA.setUnitOfMeasurement("°C");
-  // targetTempHA.setDeviceClass("temperature");
-  targetTempHA.setMin(15.0f);
+  targetTempHA.setDeviceClass("temperature");
+  targetTempHA.setMin(15.0f);  // not variables
   targetTempHA.setMax(60.0f);
-  // targetTempHA.setMode(HANumber::ModeSlider);
-  // targetTempHA.setRetain(true);
+  targetTempHA.setMode(HANumber::ModeSlider);
+  targetTempHA.setRetain(true);
   targetTempHA.onCommand(onNumberCommand);
 
   ADCInput.setName("ADCInput");
