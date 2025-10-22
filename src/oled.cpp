@@ -11,6 +11,8 @@
 #define OLED_SCL D6          // They swap SDA with SCL ;)
 
 Adafruit_SSD1306* display;
+bool displayEnabled = true;
+
 void init_oled() {
   display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
   // // OLED used nonstandard SDA and SCL pins
@@ -23,6 +25,8 @@ void init_oled() {
 }
 
 void handle_oled(uint16_t co2, float tempCO2, float humidity, float tempCover) {
+  if(!displayEnabled) return;
+
   display->clearDisplay();
   display->setTextSize(2);
   display->setTextColor(SSD1306_WHITE);
@@ -43,4 +47,16 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity, float tempCover) {
   display->println(tempCover);
 
   display->display();
+}
+
+void turnOffDisplay() {
+  displayEnabled = false;
+  display->clearDisplay();
+  display->display();
+  display->ssd1306_command(SSD1306_DISPLAYOFF);  // Фізично вимикаємо
+}
+
+void turnOnDisplay() {
+  displayEnabled = true;
+  display->ssd1306_command(SSD1306_DISPLAYON);  // Фізично вмикаємо
 }

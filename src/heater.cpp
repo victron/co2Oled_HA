@@ -1,5 +1,7 @@
 #include "heater.h"
 
+#include "oled.h"
+
 // ВИЗНАЧЕННЯ глобальних змінних - тільки тут, один раз!
 ThermoState currentState = IDLE;
 float targetTemp = 22.0f;
@@ -112,21 +114,41 @@ button btnDown(BUTTON_DOWN);
 
 void handleButtons() {
   if(btnUp.click()) {
-    targetTemp += 0.5;
-    if(targetTemp > 35.0) targetTemp = 35.0;  // Максимум
-    currentState = SETTING;
-    lastButtonPress = millis();
+    if(currentState != SETTING) {
+      turnOnDisplay();
+      currentState = SETTING;
+      lastButtonPress = millis();
+      return;  // Не змінюємо температуру
+    }
+
+    if(currentState == SETTING) {
+      // В режимі SETTING - змінюємо температуру
+      targetTemp += 0.5;
+      if(targetTemp > 35.0) targetTemp = 35.0;  // Максимум
+      lastButtonPress = millis();
+    }
   }
 
   if(btnDown.click()) {
-    targetTemp -= 0.5;
-    if(targetTemp < 5.0) targetTemp = 5.0;  // Мінімум
-    currentState = SETTING;
-    lastButtonPress = millis();
+    // Якщо НЕ в режимі SETTING - тільки вмикаємо дисплей
+    if(currentState != SETTING) {
+      turnOnDisplay();
+      currentState = SETTING;
+      lastButtonPress = millis();
+      return;  // Не змінюємо температуру
+    }
+
+    if(currentState == SETTING) {
+      // В режимі SETTING - змінюємо температуру
+      targetTemp -= 0.5;
+      if(targetTemp < 5.0) targetTemp = 5.0;  // Мінімум
+      lastButtonPress = millis();
+    }
   }
 
   // Автовихід з режиму налаштування
   if(currentState == SETTING && millis() - lastButtonPress >= SETTING_TIMEOUT) {
     currentState = IDLE;
+    turnOffDisplay();
   }
 }
