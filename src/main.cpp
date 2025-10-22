@@ -127,7 +127,7 @@ void setup() {
   targetTempHA.setMin(maxTemp);
   targetTempHA.setMax(minTemp);
   targetTempHA.setMode(HANumber::ModeSlider);
-  targetTempHA.setRetain(true);
+  // targetTempHA.setRetain(true);
   targetTempHA.onCommand(onNumberCommand);
 
   ADCInput.setName("ADCInput");
