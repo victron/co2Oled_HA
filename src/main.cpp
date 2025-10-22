@@ -30,13 +30,11 @@ HASensorNumber tempSensor("temperature", HASensorNumber::PrecisionP2);
 HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
 HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
-HASensorNumber tempCover("tempCover", HASensorNumber::PrecisionP1);
-HASensorNumber tempValue("tempValue", HASensorNumber::PrecisionP0);
+HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
+HASensorNumber ADCInput("ADCInput", HASensorNumber::PrecisionP0);  // for diagnostics
 HABinarySensor heaterOnHA("heater_on");
-HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
-
-button btn2(BUTTON_UP);
-button btn1(BUTTON_DOWN);
+// HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
+HANumber targetTempHA("target_temp", HANumber::PrecisionP1);
 
 void onMqttMessage(const char* topic, const uint8_t* payload, uint16_t length) {
   // This callback is called when message from MQTT broker is received.
@@ -124,16 +122,16 @@ void setup() {
   mqtt.onDisconnected(onMqttDisconnected);
   mqtt.onStateChanged(onMqttStateChanged);
   init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
-  tempCover.setIcon("mdi:thermometer");
-  tempCover.setName("tempCover");
-  tempCover.setUnitOfMeasurement("°C");
+  currentTempHA.setIcon("mdi:thermometer");
+  currentTempHA.setName("currentTempHA");
+  currentTempHA.setUnitOfMeasurement("°C");
 
-  targetTempHA.setIcon("mdi:thermometer");
+  targetTempHA.setIcon("mdi:heating-coil");
   targetTempHA.setName("targetTemp");
   targetTempHA.setUnitOfMeasurement("°C");
 
-  tempValue.setName("tempValue");
-  tempValue.setUnitOfMeasurement("n");
+  ADCInput.setName("ADCInput");
+  ADCInput.setUnitOfMeasurement("n");
 
   wifiLostCount.setIcon("mdi:gauge");
   wifiLostCount.setName("WIFI lost count");
@@ -143,7 +141,7 @@ void setup() {
   wifiRssi.setName("WIFI RSSI");
   wifiRssi.setUnitOfMeasurement("dBm");
 
-  heaterOnHA.setIcon("mdi:heating-coil");
+  heaterOnHA.setIcon("mdi:toggle-switch");
   heaterOnHA.setName("heater blanket");
 
   // Ініціалізація OTA з паролем
@@ -186,14 +184,19 @@ void loop() {
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
     currentTemp = readTemperature();  // call it ones per loop
-    handle_oled(co2, temperature, humidity, currentTemp);
+    if(currentState == SETTING) {
+      bool relayState = false;
+      handle_oled_setting(currentTemp, targetTemp, relayState);
+    } else {
+      handle_oled(co2, temperature, humidity, currentTemp);
+    }
 
     if(isDataReady) {
       co2Sensor.setValue(co2);
       tempSensor.setValue(temperature);
       humSensor.setValue(humidity);
-      tempCover.setValue(currentTemp);
-      tempValue.setValue(analogRead(0));  // для моніторингу
+      currentTempHA.setValue(currentTemp);
+      ADCInput.setValue(analogRead(0));  // для моніторингу
     }
 
     lastUpdateAt = millis();
@@ -212,6 +215,7 @@ void loop() {
 
     // Можеш публікувати стан термостату в MQTT
     heaterOnHA.setState(relayState);
-    targetTempHA.setValue(targetTemp);
+    // targetTempHA.setValue(targetTemp);
+    targetTempHA.setState(targetTemp);
   }
 }

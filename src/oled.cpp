@@ -24,7 +24,7 @@ void init_oled() {
   }
 }
 
-void handle_oled(uint16_t co2, float tempCO2, float humidity, float tempCover) {
+void handle_oled(uint16_t co2, float tempCO2, float humidity, float currentTempHA) {
   if(!displayEnabled) return;
 
   display->clearDisplay();
@@ -44,7 +44,24 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity, float tempCover) {
   display->print("h%:");
   display->println(humidity);
   display->print("t:");
-  display->println(tempCover);
+  display->println(currentTempHA);
+
+  display->display();
+}
+
+void handle_oled_setting(float tempCurrent, float tempTarget, bool relayState) {
+  display->clearDisplay();
+  display->setTextColor(SSD1306_WHITE);
+
+  // CURRENT температура - ЛІВА половина
+  display->setTextSize(2);    // 12x16 пікселів (4 × 12 = 48px)
+  display->setCursor(8, 24);  // x=8 (центруємо: (64-48)/2), y=24 (вертикально центруємо)
+  display->print(tempCurrent, 1);
+
+  // TARGET температура - ПРАВА половина
+  display->setTextSize(2);
+  display->setCursor(72, 24);  // x=72 (64 + 8), y=24
+  display->print(tempTarget, 1);
 
   display->display();
 }
