@@ -91,7 +91,6 @@ void setup() {
   digitalWrite(LED, LOW);
 
   pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, RELEY_OFF);
 
   setupWiFi();
 
@@ -164,10 +163,9 @@ void loop() {
     readMeasurement(co2, temperature, humidity, isDataReady);
     currentTemp = readTemperature();  // call it ones per loop
     if(currentState == SETTING) {
-      bool relayState = false;
       handle_oled_setting(currentTemp, targetTemp, relayState);
     } else {
-      handle_oled(co2, temperature, humidity, currentTemp);
+      handle_oled(co2, temperature, humidity, currentTemp, relayState);
     }
 
     if(isDataReady) {

@@ -4,7 +4,7 @@
 
 // ВИЗНАЧЕННЯ глобальних змінних - тільки тут, один раз!
 ThermoState currentState = IDLE;
-float targetTemp = 22.0f;
+float targetTemp = 0.0f;
 float currentTemp = 1001.0f;
 bool relayState = false;
 const float HYSTERESIS = 2.0f;
