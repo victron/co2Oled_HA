@@ -124,8 +124,8 @@ void setup() {
   targetTempHA.setName("blanket target");
   targetTempHA.setUnitOfMeasurement("°C");
   // targetTempHA.setDeviceClass("temperature");
-  targetTempHA.setMin(20.0f);
-  // targetTempHA.setMax(minTemp);
+  targetTempHA.setMin(15.0f);
+  targetTempHA.setMax(60.0f);
   // targetTempHA.setMode(HANumber::ModeSlider);
   // targetTempHA.setRetain(true);
   targetTempHA.onCommand(onNumberCommand);
