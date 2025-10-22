@@ -111,6 +111,9 @@ void setup() {
   pinMode(LED, OUTPUT);  // LED pin as output
   digitalWrite(LED, LOW);
 
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, RELEY_OFF);
+
   setupWiFi();
 
   init_oled();
@@ -140,8 +143,8 @@ void setup() {
   wifiRssi.setName("WIFI RSSI");
   wifiRssi.setUnitOfMeasurement("dBm");
 
-  heaterOnHA.setIcon("mdi:water-boiler");
-  heaterOnHA.setName("heater status");
+  heaterOnHA.setIcon("mdi:heating-coil");
+  heaterOnHA.setName("heater blanket");
 
   // Ініціалізація OTA з паролем
   setupOTA(HOSTNAME, OTA_PASSWORD);
@@ -205,7 +208,7 @@ void loop() {
   // ТЕРМОСТАТ - окремий таймер (2 секунди)
   if(millis() - lastThermoUpdate >= THERMO_INTERVAL) {
     lastThermoUpdate = millis();
-    updateThermostat();
+    updateThermostat(currentTemp);
 
     // Можеш публікувати стан термостату в MQTT
     heaterOnHA.setState(relayState);

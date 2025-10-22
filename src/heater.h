@@ -7,6 +7,8 @@
 #include "button.h"
 #define THERMISTOR_PIN 0  // Пін, до якого підключено термістор (аналоговий пін A0)
 #define RELAY_PIN 5
+#define RELEY_ON LOW
+#define RELEY_OFF HIGH
 #define BUTTON_DOWN 4
 #define BUTTON_UP 13
 
@@ -41,7 +43,7 @@ extern const unsigned long SETTING_TIMEOUT;
 
 float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);
-void updateThermostat();
+void updateThermostat(float currentTemp);
 void handleButtons();
 
 #endif

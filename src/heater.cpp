@@ -65,16 +65,12 @@ float readTemperature(int samples) {
     sum += analogRead(THERMISTOR_PIN);
     delayMicroseconds(200);  // Компроміс швидкості та якості
   }
-  // Загальний час: ~4-5 мс (дуже швидко!)
 
   return getTemperatureFromADC(sum / samples);
 }
 
 // State Machine - чиста логіка без таймерів
-void updateThermostat() {
-  // Читаємо поточну температуру
-  currentTemp = readTemperature();
-
+void updateThermostat(float currentTemp) {
   switch(currentState) {
     case IDLE:
       relayState = false;
@@ -104,10 +100,10 @@ void updateThermostat() {
 
     case SETTING:
       // Реле не змінюємо під час налаштування
-      break;
+      return;
   }
 
-  digitalWrite(RELAY_PIN, relayState ? HIGH : LOW);
+  digitalWrite(RELAY_PIN, relayState ? RELEY_ON : RELEY_OFF);
 }
 
 // Створюємо екземпляри кнопок
