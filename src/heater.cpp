@@ -7,7 +7,6 @@ ThermoState currentState = IDLE;
 float targetTemp = 0.0f;
 float currentTemp = 1001.0f;
 bool relayState = false;
-const float HYSTERESIS = 2.0f;
 
 unsigned long lastButtonPress = 0;
 const unsigned long SETTING_TIMEOUT = 3000;
@@ -82,7 +81,6 @@ void updateThermostat(float currentTemp) {
       } else if(currentTemp > targetTemp + HYSTERESIS) {
         currentState = COOLING;
       }
-      break;
 
     case HEATING:
       relayState = true;

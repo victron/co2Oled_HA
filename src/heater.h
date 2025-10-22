@@ -22,6 +22,9 @@ const float a1 = -3.1286816344e+00;
 const float a2 = 7.7992566178e-03;
 const float a3 = -8.0640401703e-06;
 const float a4 = 3.0590941788e-09;
+const float HYSTERESIS = 2.0f;
+const float maxTemp = 60.0f;
+const float minTemp = 15.0f;
 
 // Стани терморегулятора
 enum ThermoState {

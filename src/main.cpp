@@ -54,6 +54,22 @@ void onMqttDisconnected() {
   connected = false;
 }
 
+void onNumberCommand(HANumeric number, HANumber* sender) {
+  if(!number.isSet()) {
+    // the reset command was send by Home Assistant
+  } else {
+    // you can do whatever you want with the number as follows:
+    targetTemp = number.toFloat();
+    // protector for overheating
+
+    if(targetTemp > maxTemp) {
+      targetTemp = maxTemp;
+    }
+  }
+
+  sender->setState(targetTemp);  // report the selected option back to the HA panel
+}
+
 void setupWiFi() {
   delay(10);
   Serial.println();
@@ -101,12 +117,18 @@ void setup() {
   mqtt.onDisconnected(onMqttDisconnected);
   init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
   currentTempHA.setIcon("mdi:thermometer");
-  currentTempHA.setName("currentTempHA");
+  currentTempHA.setName("blanket current");
   currentTempHA.setUnitOfMeasurement("°C");
 
   targetTempHA.setIcon("mdi:heating-coil");
-  targetTempHA.setName("blanket Temp");
+  targetTempHA.setName("blanket target");
   targetTempHA.setUnitOfMeasurement("°C");
+  targetTempHA.setDeviceClass("temperature");
+  targetTempHA.setMin(maxTemp);
+  targetTempHA.setMax(minTemp);
+  targetTempHA.setMode(HANumber::ModeSlider);
+  targetTempHA.setRetain(true);
+  targetTempHA.onCommand(onNumberCommand);
 
   ADCInput.setName("ADCInput");
   ADCInput.setUnitOfMeasurement("n");
