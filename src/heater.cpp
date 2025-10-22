@@ -125,6 +125,7 @@ void handleButtons() {
       // В режимі SETTING - змінюємо температуру
       targetTemp += 0.5;
       if(targetTemp > 35.0) targetTemp = 35.0;  // Максимум
+      handle_oled_setting(currentTemp, targetTemp, relayState);
       lastButtonPress = millis();
     }
   }
@@ -142,6 +143,7 @@ void handleButtons() {
       // В режимі SETTING - змінюємо температуру
       targetTemp -= 0.5;
       if(targetTemp < 5.0) targetTemp = 5.0;  // Мінімум
+      handle_oled_setting(currentTemp, targetTemp, relayState);
       lastButtonPress = millis();
     }
   }

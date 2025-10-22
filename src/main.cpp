@@ -32,9 +32,9 @@ HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HASensorNumber ADCInput("ADCInput", HASensorNumber::PrecisionP0);  // for diagnostics
-HABinarySensor heaterOnHA("heater_on");
+HABinarySensor heaterOnHA("heater_onr");
 // HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
-HANumber targetTempHA("target_temp", HANumber::PrecisionP1);
+HANumber targetTempHA("target_tempr", HANumber::PrecisionP1);
 
 void onMqttConnected() {
   // Please note that you need to subscribe topic each time the connection with the broker is acquired.
@@ -105,7 +105,7 @@ void setup() {
   currentTempHA.setUnitOfMeasurement("°C");
 
   targetTempHA.setIcon("mdi:heating-coil");
-  targetTempHA.setName("targetTemp");
+  targetTempHA.setName("blanket Temp");
   targetTempHA.setUnitOfMeasurement("°C");
 
   ADCInput.setName("ADCInput");
