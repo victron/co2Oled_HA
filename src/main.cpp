@@ -34,7 +34,7 @@ HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HASensorNumber ADCInput("ADCInput", HASensorNumber::PrecisionP0);  // for diagnostics
 HABinarySensor heaterOnHA("heater_onr");
 // HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
-HANumber targetTempHA("target_tempr", HANumber::PrecisionP1);
+HANumber targetTempHA("targetBlanket", HANumber::PrecisionP1);
 
 void onMqttConnected() {
   // Please note that you need to subscribe topic each time the connection with the broker is acquired.
