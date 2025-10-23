@@ -28,7 +28,7 @@ const float minTemp = 15.0f;
 
 // Стани терморегулятора
 enum ThermoState {
-  IDLE,
+  INIT,
   HEATING,
   COOLING,
   SETTING

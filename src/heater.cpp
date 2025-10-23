@@ -3,7 +3,7 @@
 #include "oled.h"
 
 // ВИЗНАЧЕННЯ глобальних змінних - тільки тут, один раз!
-ThermoState currentState = IDLE;
+ThermoState currentState = INIT;
 float targetTemp = 0.0f;
 float currentTemp = 1001.0f;
 bool relayState = false;
@@ -73,9 +73,7 @@ float readTemperature(int samples) {
 // State Machine - чиста логіка без таймерів
 void updateThermostat(float currentTemp) {
   switch(currentState) {
-    case IDLE:
-      relayState = false;
-
+    case INIT:
       if(currentTemp < targetTemp - HYSTERESIS) {
         currentState = HEATING;
       } else if(currentTemp > targetTemp + HYSTERESIS) {
@@ -148,7 +146,7 @@ void handleButtons() {
 
   // Автовихід з режиму налаштування
   if(currentState == SETTING && millis() - lastButtonPress >= SETTING_TIMEOUT) {
-    currentState = IDLE;
+    currentState = INIT;
     turnOffDisplay();
   }
 }
