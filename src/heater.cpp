@@ -10,6 +10,7 @@ bool relayState = false;
 
 unsigned long lastButtonPress = 0;
 const unsigned long SETTING_TIMEOUT = 10000;
+bool showNormalDisplay = false;
 
 // ============================================================
 // КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
@@ -109,7 +110,14 @@ button btnUp(BUTTON_UP);  // Твої піни
 button btnDown(BUTTON_DOWN);
 
 void handleButtons() {
+  if(btnUp.isPressed() && btnDown.isPressed()) {
+    showNormalDisplay = true;  // Показуємо звичайний екран
+    currentState = SETTING;
+    return;  // Виходимо, не обробляємо click
+  }
+
   if(btnUp.click()) {
+    showNormalDisplay = false;
     if(currentState != SETTING) {
       turnOnDisplay();
       currentState = SETTING;
@@ -127,6 +135,7 @@ void handleButtons() {
   }
 
   if(btnDown.click()) {
+    showNormalDisplay = false;
     // Якщо НЕ в режимі SETTING - тільки вмикаємо дисплей
     if(currentState != SETTING) {
       turnOnDisplay();
@@ -147,6 +156,7 @@ void handleButtons() {
   // Автовихід з режиму налаштування
   if(currentState == SETTING && millis() - lastButtonPress >= SETTING_TIMEOUT) {
     currentState = INIT;
+    showNormalDisplay = false;
     turnOffDisplay();
   }
 }

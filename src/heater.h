@@ -40,6 +40,7 @@ extern float targetTemp;
 extern float currentTemp;
 extern bool relayState;
 extern const float HYSTERESIS;
+extern bool showNormalDisplay;
 
 extern unsigned long lastButtonPress;
 extern const unsigned long SETTING_TIMEOUT;
