@@ -24,7 +24,7 @@ void init_oled() {
   }
 }
 
-void handle_oled(uint16_t co2, float tempCO2, float humidity, bool relayState) {
+void handle_oled(uint16_t co2, float tempCO2, float humidity) {
   if(!displayEnabled) return;
 
   display->clearDisplay();
@@ -34,11 +34,10 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity, bool relayState) {
 
   display->print("CO2: ");
   if(co2 > highCO2level) {
-    display->print((millis() / 1000) % 2 ? String(co2) : "");  // blinking if high CO2
+    display->println((millis() / 1000) % 2 ? String(co2) : "");  // blinking if high CO2
   } else {
-    display->print(co2);
+    display->println(co2);
   }
-  display->println(relayState ? " ON" : " OFF");
 
   display->print("tC:");
   display->println(tempCO2);
@@ -53,12 +52,16 @@ void handle_oled_setting(float tempCurrent, float tempTarget, bool relayState) {
   display->setTextColor(SSD1306_WHITE);
   display->setTextSize(2);
   display->setCursor(0, 0);
-  display->println(relayState ? " ON" : " OFF");
+  display->println(relayState ? "   ON" : "   OFF");
 
   // CURRENT температура - ЛІВА половина
   display->setTextSize(2);    // 12x16 пікселів (4 × 12 = 48px)
   display->setCursor(8, 24);  // x=8 (центруємо: (64-48)/2), y=24 (вертикально центруємо)
-  display->print(tempCurrent, 1);
+  if(tempCurrent > 99.9f) {
+    display->print(tempCurrent, 0);
+  } else {
+    display->print(tempCurrent, 1);
+  }
 
   // TARGET температура - ПРАВА половина
   display->setTextSize(2);
