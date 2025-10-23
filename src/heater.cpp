@@ -113,6 +113,7 @@ void handleButtons() {
   if(btnUp.isPressed() && btnDown.isPressed()) {
     showNormalDisplay = true;  // Показуємо звичайний екран
     currentState = SETTING;
+    lastButtonPress = millis();
     return;  // Виходимо, не обробляємо click
   }
 
@@ -121,6 +122,7 @@ void handleButtons() {
     if(currentState != SETTING) {
       turnOnDisplay();
       currentState = SETTING;
+      handle_oled_setting(currentTemp, targetTemp, relayState);
       lastButtonPress = millis();
       return;  // Не змінюємо температуру
     }
@@ -140,6 +142,7 @@ void handleButtons() {
     if(currentState != SETTING) {
       turnOnDisplay();
       currentState = SETTING;
+      handle_oled_setting(currentTemp, targetTemp, relayState);
       lastButtonPress = millis();
       return;  // Не змінюємо температуру
     }
