@@ -183,7 +183,7 @@ void loop() {
   if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
-    readTemperature();  // update currentTemp
+    currentTemp = readTemperature();  // update currentTemp
     if(currentState == SETTING && showNormalDisplay) {
       handle_oled(co2, temperature, humidity, relayState);
     }
