@@ -24,7 +24,7 @@ void init_oled() {
   }
 }
 
-void handle_oled(uint16_t co2, float tempCO2, float humidity, float currentTempHA, bool relayState) {
+void handle_oled(uint16_t co2, float tempCO2, float humidity, bool relayState) {
   if(!displayEnabled) return;
 
   display->clearDisplay();
@@ -44,8 +44,6 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity, float currentTempH
   display->println(tempCO2);
   display->print("h%:");
   display->println(humidity);
-  display->print("t:");
-  display->println(currentTempHA);
 
   display->display();
 }

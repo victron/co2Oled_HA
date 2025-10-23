@@ -9,7 +9,7 @@ float currentTemp = 1001.0f;
 bool relayState = false;
 
 unsigned long lastButtonPress = 0;
-const unsigned long SETTING_TIMEOUT = 3000;
+const unsigned long SETTING_TIMEOUT = 10000;
 
 // ============================================================
 // КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
