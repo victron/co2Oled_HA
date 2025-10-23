@@ -185,7 +185,7 @@ void loop() {
     readMeasurement(co2, temperature, humidity, isDataReady);
     currentTemp = readTemperature();  // update currentTemp
     if(currentState == SETTING && showNormalDisplay) {
-      handle_oled(co2, temperature, humidity, relayState);
+      handle_oled(co2, temperature, humidity);
     }
 
     if(isDataReady) {
