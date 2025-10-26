@@ -76,11 +76,10 @@ void onNumberCommand(HANumeric number, HANumber* sender) {
 void setupWiFi() {
   Serial.print("connecting to ");
   Serial.println(WIFI_SSID);
+  lastWiFiAttempt = millis();
 
   WiFi.hostname(HOSTNAME);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-  lastWiFiAttempt = millis();
 }
 
 void setup() {
@@ -163,39 +162,37 @@ void loop() {
   }
 
   // ------------ remote -----------------------
-  if(WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED, LOW);
-    // Спроба підключення раз на 5 секунд
-    if(millis() - lastWiFiAttempt >= WIFI_RETRY_INTERVAL) {
-      setupWiFi();
-    }
-  }
   if(!connected && WiFi.status() == WL_CONNECTED) {
     // not mqtt and connected to wifi
     Serial.println("WiFi OK, mqtt NOK");
     digitalWrite(LED, (millis() / 1000) % 2);
   }
 
+  if(WiFi.status() != WL_CONNECTED) {
+    digitalWrite(LED, LOW);
+    // Спроба підключення раз на 5 секунд
+    if(millis() - lastWiFiAttempt >= WIFI_RETRY_INTERVAL) {
+      setupWiFi();
+    }
+    return;  // не підключені до WiFi
+  }
+
   // you can reset the sensor as follows:
   // analogSensor.setValue(nullptr);
 
-  // шлемо дані в HA коли є підключення
-  // TODO: можливо це вже реалізовано в бібліотеці HA?
-  if(connected) {
-    mqtt.loop();
-    ArduinoOTA.handle();
-    if(isDataReady) {
-      co2Sensor.setValue(co2);
-      tempSensor.setValue(temperature);
-      humSensor.setValue(humidity);
-      currentTempHA.setValue(currentTemp);
-      ADCInput.setValue(analogRead(0));  // для моніторингу
-    }
-
-    wifiRssi.setValue(WiFi.RSSI());
-    // Можеш публікувати стан термостату в MQTT
-    heaterOnHA.setState(relayState);
-    // targetTempHA.setValue(targetTemp);
-    targetTempHA.setState(targetTemp);
+  mqtt.loop();
+  ArduinoOTA.handle();
+  if(isDataReady) {
+    co2Sensor.setValue(co2);
+    tempSensor.setValue(temperature);
+    humSensor.setValue(humidity);
+    currentTempHA.setValue(currentTemp);
+    ADCInput.setValue(analogRead(0));  // для моніторингу
   }
+
+  wifiRssi.setValue(WiFi.RSSI());
+  // Можеш публікувати стан термостату в MQTT
+  heaterOnHA.setState(relayState);
+  // targetTempHA.setValue(targetTemp);
+  targetTempHA.setState(targetTemp);
 }
