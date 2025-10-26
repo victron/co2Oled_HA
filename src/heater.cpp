@@ -77,7 +77,8 @@ void updateThermostat(float currentTemp) {
     case INIT:
       if(currentTemp < targetTemp - HYSTERESIS) {
         currentState = HEATING;
-      } else if(currentTemp > targetTemp + HYSTERESIS) {
+      }
+      if(currentTemp > targetTemp + HYSTERESIS) {
         currentState = COOLING;
       }
 

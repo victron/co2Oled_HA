@@ -25,7 +25,7 @@ void init_oled() {
 }
 
 void handle_oled(uint16_t co2, float tempCO2, float humidity) {
-  if(!displayEnabled) return;
+  turnOnDisplay();
 
   display->clearDisplay();
   display->setTextSize(2);
@@ -48,6 +48,7 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
 }
 
 void handle_oled_setting(float tempCurrent, float tempTarget, bool relayState) {
+  turnOnDisplay();
   display->clearDisplay();
   display->setTextColor(SSD1306_WHITE);
   display->setTextSize(2);
