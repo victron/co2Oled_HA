@@ -13,6 +13,9 @@
 #define LED 2
 
 bool connected = false;
+bool haInitialized = false;  // Прапорець що HA ініціалізовано
+unsigned long lastWiFiAttempt = 0;
+const unsigned long WIFI_RETRY_INTERVAL = 5000;
 // globals for sensor
 uint16_t co2 = 0;
 float temperature = 0.0f;
@@ -71,26 +74,13 @@ void onNumberCommand(HANumeric number, HANumber* sender) {
 }
 
 void setupWiFi() {
-  delay(10);
-  Serial.println();
   Serial.print("connecting to ");
   Serial.println(WIFI_SSID);
 
   WiFi.hostname(HOSTNAME);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  if(WiFi.status() != WL_CONNECTED) {
-    Serial.println("");
-    Serial.println("WiFi NOT connected!!!!");
-    return;
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+
+  lastWiFiAttempt = millis();
 }
 
 void setup() {
@@ -149,45 +139,51 @@ void setup() {
 }
 
 unsigned long lastUpdateAt = 0;
-unsigned int wifi_fail_counter = 0;
 const unsigned int wifi_fail_triger = 300000;  // при кількості спроб реконнест
 
 unsigned long lastThermoUpdate = 0;
 const unsigned long THERMO_INTERVAL = 2000;  // 2 секунди для термостату
 
 void loop() {
-  if(!connected && WiFi.status() == WL_CONNECTED) {
-    // not mqtt and connected to wifi
-    Serial.println("WiFi OK, mqtt NOK");
-    digitalWrite(LED, (millis() / 1000) % 2);
-  }
-  // Перевірка WiFi з'єднання
-  if(WiFi.status() != WL_CONNECTED && wifi_fail_counter > wifi_fail_triger) {
-    Serial.println("WiFi lost, trying to reconnect...");
-    setupWiFi();
-  }
-  if(WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED, LOW);
-    wifi_fail_counter++;
-    Serial.print("WiFi lost, counter=");
-    Serial.println(wifi_fail_counter);
-    return;
-  }
-
-  mqtt.loop();
-  ArduinoOTA.handle();
+  // ----------------- local -----------------------
   // КНОПКИ - викликаємо в кожному циклі для швидкого відгуку
   handleButtons();
 
   // TODO: скидувати таймер при нажиманні кнопок
   if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
+    lastUpdateAt = millis();
+
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
     currentTemp = readTemperature();  // update currentTemp
     if(currentState == SETTING && showNormalDisplay) {
       handle_oled(co2, temperature, humidity);
     }
+    updateThermostat(currentTemp);
+  }
 
+  // ------------ remote -----------------------
+  if(WiFi.status() != WL_CONNECTED) {
+    digitalWrite(LED, LOW);
+    // Спроба підключення раз на 5 секунд
+    if(millis() - lastWiFiAttempt >= WIFI_RETRY_INTERVAL) {
+      setupWiFi();
+    }
+  }
+  if(!connected && WiFi.status() == WL_CONNECTED) {
+    // not mqtt and connected to wifi
+    Serial.println("WiFi OK, mqtt NOK");
+    digitalWrite(LED, (millis() / 1000) % 2);
+  }
+
+  // you can reset the sensor as follows:
+  // analogSensor.setValue(nullptr);
+
+  // шлемо дані в HA коли є підключення
+  // TODO: можливо це вже реалізовано в бібліотеці HA?
+  if(connected) {
+    mqtt.loop();
+    ArduinoOTA.handle();
     if(isDataReady) {
       co2Sensor.setValue(co2);
       tempSensor.setValue(temperature);
@@ -196,20 +192,7 @@ void loop() {
       ADCInput.setValue(analogRead(0));  // для моніторингу
     }
 
-    lastUpdateAt = millis();
-    // you can reset the sensor as follows:
-    // analogSensor.setValue(nullptr);
-    wifiLostCount.setValue(wifi_fail_counter);
-
-    int8_t rssi = WiFi.RSSI();
-    wifiRssi.setValue(rssi);
-  }
-
-  // ТЕРМОСТАТ - окремий таймер (2 секунди)
-  if(millis() - lastThermoUpdate >= THERMO_INTERVAL) {
-    lastThermoUpdate = millis();
-    updateThermostat(currentTemp);
-
+    wifiRssi.setValue(WiFi.RSSI());
     // Можеш публікувати стан термостату в MQTT
     heaterOnHA.setState(relayState);
     // targetTempHA.setValue(targetTemp);
