@@ -154,9 +154,16 @@ void loop() {
 
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
-    currentTemp = readTemperature();  // update currentTemp
-    if(currentState == SETTING && showNormalDisplay) {
-      handle_oled(co2, temperature, humidity);
+    currentTemp = readTemperature();
+    // if(currentState == SETTING && showNormalDisplay) {
+    //   handle_oled(co2, temperature, humidity);
+    // }
+    if(currentState == SETTING) {
+      if(showNormalDisplay) {
+        handle_oled(co2, temperature, humidity);
+      } else {
+        handle_oled_setting(currentTemp, targetTemp, relayState);  // ДОДАЙ!
+      }
     }
     updateThermostat(currentTemp);
   }
