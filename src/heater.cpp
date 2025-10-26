@@ -75,12 +75,15 @@ float readTemperature(int samples) {
 void updateThermostat(float currentTemp) {
   switch(currentState) {
     case INIT:
-      if(currentTemp < targetTemp - HYSTERESIS) {
+      if(currentTemp <= targetTemp - HYSTERESIS) {
         currentState = HEATING;
+        relayState = true;
       }
-      if(currentTemp > targetTemp + HYSTERESIS) {
+      if(currentTemp >= targetTemp + HYSTERESIS) {
         currentState = COOLING;
+        relayState = false;
       }
+      break;
 
     case HEATING:
       relayState = true;
