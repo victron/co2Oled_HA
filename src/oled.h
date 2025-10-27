@@ -5,9 +5,15 @@
 
 const uint16_t highCO2level = 1200;
 
+enum OledState {
+  OFF,
+  CO2_DISPLAY,
+  SETTINGS
+};
+
+extern OledState oledState;
 void init_oled();
 void handle_oled(uint16_t co2, float tempCO2, float humidity);
-void handle_oled_setting(float tempCurrent, float tempTarget, bool relayState);
 void turnOffDisplay();
 void turnOnDisplay();
 

@@ -62,15 +62,15 @@ void onNumberCommand(HANumeric number, HANumber* sender) {
     // the reset command was send by Home Assistant
   } else {
     // you can do whatever you want with the number as follows:
-    targetTemp = number.toFloat();
+    TempTarget = number.toFloat();
     // protector for overheating
 
-    if(targetTemp > maxTemp) {
-      targetTemp = maxTemp;
+    if(TempTarget > maxTemp) {
+      TempTarget = maxTemp;
     }
   }
 
-  sender->setState(targetTemp);  // report the selected option back to the HA panel
+  sender->setState(TempTarget);  // report the selected option back to the HA panel
 }
 
 void setupWiFi() {
@@ -147,6 +147,7 @@ void loop() {
   // ----------------- local -----------------------
   // КНОПКИ - викликаємо в кожному циклі для швидкого відгуку
   handleButtons();
+  handle_oled(co2, temperature, humidity);
 
   // TODO: скидувати таймер при нажиманні кнопок
   if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
@@ -154,18 +155,8 @@ void loop() {
 
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
-    currentTemp = readTemperature();
-    // if(currentState == SETTING && showNormalDisplay) {
-    //   handle_oled(co2, temperature, humidity);
-    // }
-    if(currentState == SETTING) {
-      if(showNormalDisplay) {
-        handle_oled(co2, temperature, humidity);
-      } else {
-        handle_oled_setting(currentTemp, targetTemp, relayState);  // ДОДАЙ!
-      }
-    }
-    updateThermostat(currentTemp);
+    TempCurrent = readTemperature();
+    updateThermostat(TempCurrent);
   }
 
   // ------------ remote -----------------------
@@ -193,13 +184,13 @@ void loop() {
     co2Sensor.setValue(co2);
     tempSensor.setValue(temperature);
     humSensor.setValue(humidity);
-    currentTempHA.setValue(currentTemp);
+    currentTempHA.setValue(TempCurrent);
     ADCInput.setValue(analogRead(0));  // для моніторингу
   }
 
   wifiRssi.setValue(WiFi.RSSI());
   // Можеш публікувати стан термостату в MQTT
   heaterOnHA.setState(relayState);
-  // targetTempHA.setValue(targetTemp);
-  targetTempHA.setState(targetTemp);
+  // targetTempHA.setValue(TempTarget);
+  targetTempHA.setState(TempTarget);
 }

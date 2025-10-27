@@ -2,6 +2,8 @@
 
 #include <Adafruit_GFX.h>
 
+#include "heater.h"
+
 #define SCREEN_WIDTH 128  // OLED display width, in pixels
 #define SCREEN_HEIGHT 64  // OLED display height, in pixels
 
@@ -12,6 +14,7 @@
 
 Adafruit_SSD1306* display;
 bool displayEnabled = true;
+OledState oledState = OFF;
 
 void init_oled() {
   display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -25,50 +28,52 @@ void init_oled() {
 }
 
 void handle_oled(uint16_t co2, float tempCO2, float humidity) {
-  turnOnDisplay();
+  switch(oledState) {
+    case OFF:
+      turnOffDisplay();
+      return;
 
-  display->clearDisplay();
-  display->setTextSize(2);
-  display->setTextColor(SSD1306_WHITE);
-  display->setCursor(0, 0);
+    case CO2_DISPLAY:
+      turnOnDisplay();
 
-  display->print("CO2: ");
-  if(co2 > highCO2level) {
-    display->println((millis() / 1000) % 2 ? String(co2) : "");  // blinking if high CO2
-  } else {
-    display->println(co2);
+      display->setTextSize(2);
+      display->setCursor(0, 0);
+
+      display->print("CO2: ");
+      if(co2 > highCO2level) {
+        display->println((millis() / 1000) % 2 ? String(co2) : "");  // blinking if high CO2
+      } else {
+        display->println(co2);
+      }
+
+      display->print("tC:");
+      display->println(tempCO2);
+      display->print("h%:");
+      display->println(humidity);
+      break;
+
+    case OledState::SETTINGS:
+      turnOnDisplay();
+
+      display->setTextSize(2);
+      display->setCursor(0, 0);
+      display->println(relayState ? "   ON" : "   OFF");
+
+      // CURRENT температура - ЛІВА половина
+      display->setTextSize(2);    // 12x16 пікселів (4 × 12 = 48px)
+      display->setCursor(8, 24);  // x=8 (центруємо: (64-48)/2), y=24 (вертикально центруємо)
+      if(TempCurrent > 99.9f) {
+        display->print(TempCurrent, 0);
+      } else {
+        display->print(TempCurrent, 1);
+      }
+
+      // TARGET температура - ПРАВА половина
+      display->setTextSize(2);
+      display->setCursor(72, 24);  // x=72 (64 + 8), y=24
+      display->print(TempTarget, 1);
+      break;
   }
-
-  display->print("tC:");
-  display->println(tempCO2);
-  display->print("h%:");
-  display->println(humidity);
-
-  display->display();
-}
-
-void handle_oled_setting(float tempCurrent, float tempTarget, bool relayState) {
-  turnOnDisplay();
-  display->clearDisplay();
-  display->setTextColor(SSD1306_WHITE);
-  display->setTextSize(2);
-  display->setCursor(0, 0);
-  display->println(relayState ? "   ON" : "   OFF");
-
-  // CURRENT температура - ЛІВА половина
-  display->setTextSize(2);    // 12x16 пікселів (4 × 12 = 48px)
-  display->setCursor(8, 24);  // x=8 (центруємо: (64-48)/2), y=24 (вертикально центруємо)
-  if(tempCurrent > 99.9f) {
-    display->print(tempCurrent, 0);
-  } else {
-    display->print(tempCurrent, 1);
-  }
-
-  // TARGET температура - ПРАВА половина
-  display->setTextSize(2);
-  display->setCursor(72, 24);  // x=72 (64 + 8), y=24
-  display->print(tempTarget, 1);
-
   display->display();
 }
 
@@ -82,4 +87,6 @@ void turnOffDisplay() {
 void turnOnDisplay() {
   displayEnabled = true;
   display->ssd1306_command(SSD1306_DISPLAYON);  // Фізично вмикаємо
+  display->clearDisplay();
+  display->setTextColor(SSD1306_WHITE);
 }

@@ -35,9 +35,9 @@ enum ThermoState {
 };
 
 // ОГОЛОШЕННЯ (extern) - кажемо що вони існують десь
-extern ThermoState currentState;
-extern float targetTemp;
-extern float currentTemp;
+extern ThermoState heaterState;
+extern float TempTarget;
+extern float TempCurrent;
 extern bool relayState;
 extern const float HYSTERESIS;
 extern bool showNormalDisplay;

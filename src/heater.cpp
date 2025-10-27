@@ -3,9 +3,9 @@
 #include "oled.h"
 
 // ВИЗНАЧЕННЯ глобальних змінних - тільки тут, один раз!
-ThermoState currentState = INIT;
-float targetTemp = 0.0f;
-float currentTemp = 1001.0f;
+ThermoState heaterState = INIT;
+float TempTarget = 0.0f;
+float TempCurrent = 1001.0f;
 bool relayState = false;
 
 unsigned long lastButtonPress = 0;
@@ -72,15 +72,15 @@ float readTemperature(int samples) {
 }
 
 // State Machine - чиста логіка без таймерів
-void updateThermostat(float currentTemp) {
-  switch(currentState) {
+void updateThermostat(float TempCurrent) {
+  switch(heaterState) {
     case INIT:
-      if(currentTemp <= targetTemp - HYSTERESIS) {
-        currentState = HEATING;
+      if(TempCurrent <= TempTarget - HYSTERESIS) {
+        heaterState = HEATING;
         relayState = true;
       }
-      if(currentTemp >= targetTemp + HYSTERESIS) {
-        currentState = COOLING;
+      if(TempCurrent >= TempTarget + HYSTERESIS) {
+        heaterState = COOLING;
         relayState = false;
       }
       break;
@@ -88,16 +88,16 @@ void updateThermostat(float currentTemp) {
     case HEATING:
       relayState = true;
 
-      if(currentTemp >= targetTemp + HYSTERESIS) {
-        currentState = COOLING;
+      if(TempCurrent >= TempTarget + HYSTERESIS) {
+        heaterState = COOLING;
       }
       break;
 
     case COOLING:
       relayState = false;
 
-      if(currentTemp <= targetTemp - HYSTERESIS) {
-        currentState = HEATING;
+      if(TempCurrent <= TempTarget - HYSTERESIS) {
+        heaterState = HEATING;
       }
       break;
 
@@ -116,54 +116,40 @@ button btnDown(BUTTON_DOWN);
 void handleButtons() {
   if(btnUp.isPressed() && btnDown.isPressed()) {
     showNormalDisplay = true;  // Показуємо звичайний екран
-    currentState = SETTING;
+    heaterState = SETTING;     // TODO: maybe not needed
+    oledState = CO2_DISPLAY;
     lastButtonPress = millis();
     return;  // Виходимо, не обробляємо click
   }
 
-  if(btnUp.click()) {
-    showNormalDisplay = false;
-    if(currentState != SETTING) {
-      turnOnDisplay();
-      currentState = SETTING;
-      handle_oled_setting(currentTemp, targetTemp, relayState);
+  bool upClicked = btnUp.click();
+  bool downClicked = btnDown.click();
+  if(upClicked || downClicked) {
+    if(heaterState != SETTING) {
+      oledState = SETTINGS;
+      heaterState = SETTING;
       lastButtonPress = millis();
       return;  // Не змінюємо температуру
-    }
-
-    if(currentState == SETTING) {
-      // В режимі SETTING - змінюємо температуру
-      targetTemp += 0.5;
-      if(targetTemp > 35.0) targetTemp = 35.0;  // Максимум
-      handle_oled_setting(currentTemp, targetTemp, relayState);
-      lastButtonPress = millis();
     }
   }
 
-  if(btnDown.click()) {
-    showNormalDisplay = false;
-    // Якщо НЕ в режимі SETTING - тільки вмикаємо дисплей
-    if(currentState != SETTING) {
-      turnOnDisplay();
-      currentState = SETTING;
-      handle_oled_setting(currentTemp, targetTemp, relayState);
-      lastButtonPress = millis();
-      return;  // Не змінюємо температуру
-    }
+  if(upClicked) {
+    // В режимі SETTING - змінюємо температуру
+    TempTarget += 0.5;
+    if(TempTarget > 35.0) TempTarget = 35.0;  // Максимум
+    lastButtonPress = millis();
+  }
 
-    if(currentState == SETTING) {
-      // В режимі SETTING - змінюємо температуру
-      targetTemp -= 0.5;
-      if(targetTemp < 5.0) targetTemp = 5.0;  // Мінімум
-      handle_oled_setting(currentTemp, targetTemp, relayState);
-      lastButtonPress = millis();
-    }
+  if(downClicked) {
+    // В режимі SETTING - змінюємо температуру
+    TempTarget -= 0.5;
+    if(TempTarget < 5.0) TempTarget = 5.0;  // Мінімум
+    lastButtonPress = millis();
   }
 
   // Автовихід з режиму налаштування
-  if(currentState == SETTING && millis() - lastButtonPress >= SETTING_TIMEOUT) {
-    currentState = INIT;
-    showNormalDisplay = false;
-    turnOffDisplay();
+  if(heaterState == SETTING && millis() - lastButtonPress >= SETTING_TIMEOUT) {
+    heaterState = INIT;
+    oledState = OFF;
   }
 }
