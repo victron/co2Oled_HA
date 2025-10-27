@@ -15,8 +15,6 @@ void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber&
   Serial.println("Connected to the network");
 
   // set device's details (optional)
-  device.setName("Air");
-  device.setSoftwareVersion("1.0.0");
 
   // configure sensor (optional)
   co2Sensor.setIcon("mdi:molecule-co2");

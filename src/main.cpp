@@ -26,7 +26,7 @@ bool heaterOn = false;
 
 // globals for HA
 WiFiClient client;
-HADevice device;
+HADevice device(HOSTNAME);  // унікальний ID пристрою mqtt
 HAMqtt mqtt(client, device);
 HASensorNumber co2Sensor("co2", HASensorNumber::PrecisionP0);
 HASensorNumber tempSensor("temperature", HASensorNumber::PrecisionP2);
@@ -104,6 +104,8 @@ void setup() {
 
   mqtt.onConnected(onMqttConnected);
   mqtt.onDisconnected(onMqttDisconnected);
+  device.setName(HOSTNAME);  // name shown in HA
+  device.setSoftwareVersion("1.1.0");
   init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
   currentTempHA.setIcon("mdi:thermometer");
   currentTempHA.setName("blanket current");
