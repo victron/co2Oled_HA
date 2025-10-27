@@ -55,23 +55,19 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
     case OledState::SETTINGS:
       turnOnDisplay();
 
-      display->setTextSize(2);
+      display->setTextSize(3);
       display->setCursor(0, 0);
       display->println(relayState ? "   ON" : "   OFF");
 
       // CURRENT температура - ЛІВА половина
       display->setTextSize(2);    // 12x16 пікселів (4 × 12 = 48px)
       display->setCursor(8, 24);  // x=8 (центруємо: (64-48)/2), y=24 (вертикально центруємо)
-      if(TempCurrent > 99.9f) {
-        display->print(TempCurrent, 0);
-      } else {
-        display->print(TempCurrent, 1);
-      }
+      display->print(TempCurrent, 0);
 
       // TARGET температура - ПРАВА половина
-      display->setTextSize(2);
+      display->setTextSize(3);
       display->setCursor(72, 24);  // x=72 (64 + 8), y=24
-      display->print(TempTarget, 1);
+      display->print(TempTarget, 0);
       break;
   }
   display->display();
