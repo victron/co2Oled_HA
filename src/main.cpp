@@ -187,11 +187,6 @@ void loop() {
     updateThermostat(TempCurrent);
   }
 
-  if(abs(TempTarget - lastSentTargetTemp) > 0.01f) {
-    publishRetainedTargetTemp(TempTarget);
-    lastSentTargetTemp = TempTarget;
-  }
-
   // ------------ remote -----------------------
   if(!connected && WiFi.status() == WL_CONNECTED) {
     // not mqtt and connected to wifi
@@ -213,6 +208,12 @@ void loop() {
 
   mqtt.loop();
   ArduinoOTA.handle();
+
+  if(abs(TempTarget - lastSentTargetTemp) > 0.01f) {
+    publishRetainedTargetTemp(TempTarget);
+    lastSentTargetTemp = TempTarget;
+  }
+
   if(isDataReady) {
     co2Sensor.setValue(co2);
     tempSensor.setValue(temperature);
