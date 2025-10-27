@@ -116,7 +116,7 @@ void setup() {
   targetTempHA.setMin(15.0f);  // not variables
   targetTempHA.setMax(60.0f);
   targetTempHA.setMode(HANumber::ModeSlider);
-  targetTempHA.setRetain(true);
+  // targetTempHA.setRetain(true);
   targetTempHA.onCommand(onNumberCommand);
 
   ADCInput.setName("ADCInput");
@@ -192,5 +192,5 @@ void loop() {
   // Можеш публікувати стан термостату в MQTT
   heaterOnHA.setState(relayState);
   // targetTempHA.setValue(TempTarget);
-  // targetTempHA.setState(TempTarget);
+  targetTempHA.setState(TempTarget);
 }
