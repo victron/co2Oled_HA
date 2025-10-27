@@ -60,13 +60,13 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
       display->println(relayState ? "   ON" : "   OFF");
 
       // CURRENT температура - ЛІВА половина
-      display->setTextSize(3);        // 18x24
-      display->setCursor(0, 16 + 2);  // центруємо
+      display->setTextSize(3);    // 18x24
+      display->setCursor(1, 18);  // центруємо 16 + 2
       display->print(TempCurrent, 0);
 
       // TARGET температура - ПРАВА половина
       display->setTextSize(4);
-      display->setCursor(64, 64 - 32);
+      display->setCursor(65, 32);  // 64+1, 64 - 32
       display->print(TempTarget, 0);
       break;
   }
