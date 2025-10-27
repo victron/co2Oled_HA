@@ -192,5 +192,5 @@ void loop() {
   // Можеш публікувати стан термостату в MQTT
   heaterOnHA.setState(relayState);
   // targetTempHA.setValue(TempTarget);
-  targetTempHA.setState(TempTarget);
+  // targetTempHA.setState(TempTarget);
 }
