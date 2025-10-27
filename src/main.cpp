@@ -82,6 +82,30 @@ void setupWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 }
 
+void publishRetainedTargetTemp(float value) {
+  // Формуємо command topic
+  String cmdTopic = "aha/";
+
+  cmdTopic += HOSTNAME;
+  cmdTopic += "/targetBlanket/cmd_t";
+
+  // Формуємо payload (HA очікує ціле число: 25.5 → "255")
+  char payload[16];
+  sprintf(payload, "%.0f", value * 10);
+
+  // Публікуємо з retained=true
+  bool result = mqtt.publish(
+      cmdTopic.c_str(),  // topic
+      payload,           // payload
+      true               // retained
+  );
+
+  Serial.print("Published retained command: ");
+  Serial.print(payload);
+  Serial.print(" -> ");
+  Serial.println(result ? "OK" : "FAILED");
+}
+
 void setup() {
   Serial.begin(115200);
   while(!Serial) {
@@ -159,6 +183,7 @@ void loop() {
     readMeasurement(co2, temperature, humidity, isDataReady);
     TempCurrent = readTemperature();
     updateThermostat(TempCurrent);
+    publishRetainedTargetTemp(TempTarget);
   }
 
   // ------------ remote -----------------------
