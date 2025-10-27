@@ -135,14 +135,14 @@ void handleButtons() {
 
   if(upClicked) {
     // В режимі SETTING - змінюємо температуру
-    TempTarget += 0.5;
+    TempTarget += 1.0;
     if(TempTarget > 40.0) TempTarget = 40.0;  // Максимум
     lastButtonPress = millis();
   }
 
   if(downClicked) {
     // В режимі SETTING - змінюємо температуру
-    TempTarget -= 0.5;
+    TempTarget -= 1.0;
     if(TempTarget < 5.0) TempTarget = 5.0;  // Мінімум
     lastButtonPress = millis();
   }

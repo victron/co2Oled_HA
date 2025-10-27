@@ -84,6 +84,7 @@ void setupWiFi() {
 }
 
 void publishRetainedTargetTemp(float value) {
+  // workaround to publish retained command topic
   // Формуємо command topic
   String cmdTopic = "aha/";
 
@@ -141,7 +142,7 @@ void setup() {
   targetTempHA.setUnitOfMeasurement("°C");
   targetTempHA.setDeviceClass("temperature");
   targetTempHA.setMin(15.0f);  // not variables
-  targetTempHA.setMax(60.0f);
+  targetTempHA.setMax(50.0f);
   targetTempHA.setMode(HANumber::ModeSlider);
   // targetTempHA.setRetain(true);
   targetTempHA.onCommand(onNumberCommand);
