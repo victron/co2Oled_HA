@@ -21,6 +21,7 @@ uint16_t co2 = 0;
 float temperature = 0.0f;
 float humidity = 0.0f;
 bool isDataReady = false;
+float lastSentTargetTemp = 1.0f;
 
 bool heaterOn = false;
 
@@ -183,7 +184,11 @@ void loop() {
     readMeasurement(co2, temperature, humidity, isDataReady);
     TempCurrent = readTemperature();
     updateThermostat(TempCurrent);
+  }
+
+  if(abs(TempTarget - lastSentTargetTemp) > 0.01f) {
     publishRetainedTargetTemp(TempTarget);
+    lastSentTargetTemp = TempTarget;
   }
 
   // ------------ remote -----------------------
