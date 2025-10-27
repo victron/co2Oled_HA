@@ -212,6 +212,7 @@ void loop() {
   if(abs(TempTarget - lastSentTargetTemp) > 0.01f) {
     publishRetainedTargetTemp(TempTarget);
     lastSentTargetTemp = TempTarget;
+    targetTempHA.setState(TempTarget);
   }
 
   if(isDataReady) {
@@ -226,5 +227,4 @@ void loop() {
   // Можеш публікувати стан термостату в MQTT
   heaterOnHA.setState(relayState);
   // targetTempHA.setValue(TempTarget);
-  targetTempHA.setState(TempTarget);
 }
