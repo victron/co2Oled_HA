@@ -210,7 +210,7 @@ void loop() {
   ArduinoOTA.handle();
 
   if(abs(TempTarget - lastSentTargetTemp) > 0.1f) {
-    // publishRetainedTargetTemp(TempTarget);
+    publishRetainedTargetTemp(TempTarget);
     lastSentTargetTemp = TempTarget;
     targetTempHA.setState(TempTarget);
   }
