@@ -38,7 +38,7 @@ HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HASensorNumber ADCInput("ADCInput", HASensorNumber::PrecisionP0);  // for diagnostics
 HABinarySensor heaterOnHA("heater_onr");
 // HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
-HANumber targetTempHA("targetBlanket", HANumber::PrecisionP1);
+HANumber targetTempHA("targetBlanket", HANumber::PrecisionP0);
 
 void onMqttConnected() {
   // Please note that you need to subscribe topic each time the connection with the broker is acquired.
@@ -93,7 +93,7 @@ void publishRetainedTargetTemp(float value) {
 
   // Формуємо payload (HA очікує ціле число: 25.5 → "255")
   char payload[16];
-  sprintf(payload, "%.0f", value * 10);
+  sprintf(payload, "%.0f", value);
 
   // Публікуємо з retained=true
   bool result = mqtt.publish(
@@ -144,7 +144,7 @@ void setup() {
   targetTempHA.setMin(15.0f);  // not variables
   targetTempHA.setMax(50.0f);
   targetTempHA.setMode(HANumber::ModeSlider);
-  // targetTempHA.setRetain(true);
+  targetTempHA.setRetain(true);
   targetTempHA.onCommand(onNumberCommand);
 
   ADCInput.setName("ADCInput");
@@ -210,11 +210,10 @@ void loop() {
   ArduinoOTA.handle();
 
   if(abs(TempTarget - lastSentTargetTemp) > 0.01f) {
-    // publishRetainedTargetTemp(TempTarget);
+    publishRetainedTargetTemp(TempTarget);
     lastSentTargetTemp = TempTarget;
     targetTempHA.setState(TempTarget);
   }
-  targetTempHA.setState(TempTarget);
 
   if(isDataReady) {
     co2Sensor.setValue(co2);
