@@ -21,7 +21,7 @@ uint16_t co2 = 0;
 float temperature = 0.0f;
 float humidity = 0.0f;
 bool isDataReady = false;
-float lastSentTargetTemp = 1.0f;
+float lastSentTargetTemp = 15.0f;
 
 bool heaterOn = false;
 
@@ -209,7 +209,7 @@ void loop() {
   mqtt.loop();
   ArduinoOTA.handle();
 
-  if(abs(TempTarget - lastSentTargetTemp) > 0.01f) {
+  if(abs(TempTarget - lastSentTargetTemp) > 0.1f) {
     // publishRetainedTargetTemp(TempTarget);
     lastSentTargetTemp = TempTarget;
     targetTempHA.setState(TempTarget);

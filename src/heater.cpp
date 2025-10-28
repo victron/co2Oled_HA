@@ -4,7 +4,7 @@
 
 // ВИЗНАЧЕННЯ глобальних змінних - тільки тут, один раз!
 ThermoState heaterState = INIT;
-float TempTarget = 0.0f;
+float TempTarget = 15.0f;
 float TempCurrent = 1001.0f;
 bool relayState = false;
 
