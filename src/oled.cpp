@@ -67,7 +67,7 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
       // TARGET температура - ПРАВА половина
       display->setTextSize(4);
       display->setCursor(65, 32);  // 64+1, 64 - 32
-      display->print(TempTarget, 0);
+      display->print(TempTarget);
       break;
   }
   display->display();
