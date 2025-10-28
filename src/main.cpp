@@ -214,6 +214,7 @@ void loop() {
     lastSentTargetTemp = TempTarget;
     targetTempHA.setState(TempTarget);
   }
+  targetTempHA.setState(TempTarget);
 
   if(isDataReady) {
     co2Sensor.setValue(co2);
