@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoHA.h>
 #include <ESP8266WiFi.h>
+#include <Ticker.h>
 #include <Wire.h>
 
 #include "OTAHandler.h"
@@ -11,6 +12,11 @@
 #include "oled.h"
 
 #define LED 2
+//-----------------  wagchdog
+Ticker watchdogTicker;
+unsigned long lastFeedTime = 0;
+const unsigned long WATCHDOG_TIMEOUT = 30000;
+//----------------------
 
 bool connected = false;
 bool haInitialized = false;  // Прапорець що HA ініціалізовано
@@ -108,11 +114,21 @@ void publishRetainedTargetTemp(float value) {
   Serial.println(result ? "OK" : "FAILED");
 }
 
+void watchdogCallback() {
+  if(millis() - lastFeedTime > WATCHDOG_TIMEOUT) {
+    Serial.println("WATCHDOG TIMEOUT!");
+    ESP.restart();
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   while(!Serial) {
     delay(100);
   }
+
+  watchdogTicker.attach(5, watchdogCallback);
+  lastFeedTime = millis();
 
   // OLED used nonstandard SDA and SCL pins
   Wire.begin(D5, D6);
@@ -172,6 +188,8 @@ unsigned long lastThermoUpdate = 0;
 const unsigned long THERMO_INTERVAL = 2000;  // 2 секунди для термостату
 
 void loop() {
+  lastFeedTime = millis();
+
   // ----------------- local -----------------------
   // КНОПКИ - викликаємо в кожному циклі для швидкого відгуку
   handleButtons();
