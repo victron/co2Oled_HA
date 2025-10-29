@@ -38,7 +38,6 @@ HAMqtt mqtt(client, device);
 HASensorNumber co2Sensor("co2", HASensorNumber::PrecisionP0);
 HASensorNumber tempSensor("temperature", HASensorNumber::PrecisionP2);
 HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
-HASensorNumber wifiLostCount("wifiLostCount", HASensorNumber::PrecisionP0);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HASensorNumber ADCInput("ADCInput", HASensorNumber::PrecisionP0);  // for diagnostics
@@ -165,10 +164,6 @@ void setup() {
 
   ADCInput.setName("ADCInput");
   ADCInput.setUnitOfMeasurement("n");
-
-  wifiLostCount.setIcon("mdi:gauge");
-  wifiLostCount.setName("WIFI lost count");
-  wifiLostCount.setUnitOfMeasurement("n");
 
   wifiRssi.setIcon("mdi:wifi");
   wifiRssi.setName("WIFI RSSI");
