@@ -40,7 +40,6 @@ HASensorNumber tempSensor("temperature", HASensorNumber::PrecisionP2);
 HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
-HASensorNumber ADCInput("ADCInput", HASensorNumber::PrecisionP0);  // for diagnostics
 HABinarySensor heaterOnHA("heater_onr");
 // HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
 HANumber targetTempHA("targetBlanket", HANumber::PrecisionP0);
@@ -162,9 +161,6 @@ void setup() {
   targetTempHA.setRetain(true);
   targetTempHA.onCommand(onNumberCommand);
 
-  ADCInput.setName("ADCInput");
-  ADCInput.setUnitOfMeasurement("n");
-
   wifiRssi.setIcon("mdi:wifi");
   wifiRssi.setName("WIFI RSSI");
   wifiRssi.setUnitOfMeasurement("dBm");
@@ -230,7 +226,6 @@ void loop() {
     tempSensor.setValue(temperature);
     humSensor.setValue(humidity);
     currentTempHA.setValue(TempCurrent);
-    ADCInput.setValue(analogRead(0));  // для моніторингу
   }
 
   wifiRssi.setValue(WiFi.RSSI());
