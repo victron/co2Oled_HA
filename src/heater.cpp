@@ -121,7 +121,7 @@ void handleButtons() {
   bool downClicked = btnDown.click();
   if(upClicked || downClicked) {
     if(oledState == OFF) {
-      oledState = SETTINGS;
+      oledState = SET_TARGET;
       lastButtonPress = millis();
       return;  // Не змінюємо температуру
     }
@@ -142,7 +142,7 @@ void handleButtons() {
   }
 
   // Автовихід з режиму налаштування
-  if(oledState == SETTINGS && millis() - lastButtonPress >= SETTING_TIMEOUT) {
+  if(oledState == SET_TARGET && millis() - lastButtonPress >= SETTING_TIMEOUT) {
     heaterState = INIT;
     oledState = OFF;
   }

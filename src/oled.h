@@ -8,7 +8,7 @@ const uint16_t highCO2level = 1200;
 enum OledState {
   OFF,
   CO2_DISPLAY,
-  SETTINGS
+  SET_TARGET
 };
 
 extern OledState oledState;

@@ -52,7 +52,7 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
       display->println(humidity);
       break;
 
-    case OledState::SETTINGS:
+    case OledState::SET_TARGET:
       turnOnDisplay();
 
       display->setTextSize(2);
