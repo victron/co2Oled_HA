@@ -100,10 +100,6 @@ void updateThermostat(float TempCurrent) {
         heaterState = HEATING;
       }
       break;
-
-    case SETTING:
-      // Реле не змінюємо під час налаштування
-      return;
   }
 
   digitalWrite(RELAY_PIN, relayState ? RELEY_ON : RELEY_OFF);
@@ -116,7 +112,6 @@ button btnDown(BUTTON_DOWN);
 void handleButtons() {
   if(btnUp.isPressed() && btnDown.isPressed()) {
     showNormalDisplay = true;  // Показуємо звичайний екран
-    heaterState = SETTING;     // TODO: maybe not needed
     oledState = CO2_DISPLAY;
     lastButtonPress = millis();
     return;  // Виходимо, не обробляємо click
@@ -125,9 +120,8 @@ void handleButtons() {
   bool upClicked = btnUp.click();
   bool downClicked = btnDown.click();
   if(upClicked || downClicked) {
-    if(heaterState != SETTING) {
+    if(oledState == OFF) {
       oledState = SETTINGS;
-      heaterState = SETTING;
       lastButtonPress = millis();
       return;  // Не змінюємо температуру
     }
@@ -148,7 +142,7 @@ void handleButtons() {
   }
 
   // Автовихід з режиму налаштування
-  if(heaterState == SETTING && millis() - lastButtonPress >= SETTING_TIMEOUT) {
+  if(oledState == SETTINGS && millis() - lastButtonPress >= SETTING_TIMEOUT) {
     heaterState = INIT;
     oledState = OFF;
   }

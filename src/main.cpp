@@ -209,7 +209,7 @@ void loop() {
   mqtt.loop();
   ArduinoOTA.handle();
 
-  if(abs(TempTarget - lastSentTargetTemp) > 0.1f) {
+  if(abs(TempTarget - lastSentTargetTemp) > 0.1f) {  // it's critical to have same initial values of variables, to avoid unnecessary publish
     publishRetainedTargetTemp(TempTarget);
     lastSentTargetTemp = TempTarget;
     targetTempHA.setState(TempTarget);
