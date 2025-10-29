@@ -198,6 +198,7 @@ void loop() {
     digitalWrite(LED, LOW);
     // Спроба підключення раз на 5 секунд
     if(millis() - lastWiFiAttempt >= WIFI_RETRY_INTERVAL) {
+      lastWiFiAttempt = millis();
       setupWiFi();
     }
     return;  // не підключені до WiFi

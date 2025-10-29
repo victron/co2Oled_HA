@@ -10,7 +10,6 @@ bool relayState = false;
 
 unsigned long lastButtonPress = 0;
 const unsigned long SETTING_TIMEOUT = 10000;
-bool showNormalDisplay = false;
 
 // ============================================================
 // КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
@@ -111,7 +110,6 @@ button btnDown(BUTTON_DOWN);
 
 void handleButtons() {
   if(btnUp.isPressed() && btnDown.isPressed()) {
-    showNormalDisplay = true;  // Показуємо звичайний екран
     oledState = CO2_DISPLAY;
     lastButtonPress = millis();
     return;  // Виходимо, не обробляємо click
