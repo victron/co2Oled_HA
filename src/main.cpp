@@ -177,8 +177,7 @@ void loop() {
   handleButtons();
   handle_oled(co2, temperature, humidity);
 
-  // TODO: скидувати таймер при нажиманні кнопок
-  if((millis() - lastUpdateAt) > 1000) {  // 1000ms debounce time
+  if((millis() - lastUpdateAt) > 5000) {
     lastUpdateAt = millis();
 
     // Read Measurement
@@ -203,9 +202,6 @@ void loop() {
     }
     return;  // не підключені до WiFi
   }
-
-  // you can reset the sensor as follows:
-  // analogSensor.setValue(nullptr);
 
   mqtt.loop();
   ArduinoOTA.handle();
