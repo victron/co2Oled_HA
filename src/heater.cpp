@@ -140,7 +140,7 @@ void handleButtons() {
   }
 
   // Автовихід з режиму налаштування
-  if(oledState == SET_TARGET && millis() - lastButtonPress >= SETTING_TIMEOUT) {
+  if(oledState != OFF && millis() - lastButtonPress >= SETTING_TIMEOUT) {
     heaterState = INIT;
     oledState = OFF;
   }

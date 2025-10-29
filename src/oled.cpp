@@ -35,6 +35,8 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
 
     case CO2_DISPLAY:
       turnOnDisplay();
+      display->clearDisplay();
+      display->setTextColor(SSD1306_WHITE);
 
       display->setTextSize(2);
       display->setCursor(0, 0);
@@ -54,7 +56,8 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
 
     case OledState::SET_TARGET:
       turnOnDisplay();
-
+      display->clearDisplay();
+      display->setTextColor(SSD1306_WHITE);
       display->setTextSize(2);
       display->setCursor(0, 0);
       display->println(relayState ? "   ON" : "   OFF");
@@ -74,15 +77,13 @@ void handle_oled(uint16_t co2, float tempCO2, float humidity) {
 }
 
 void turnOffDisplay() {
-  displayEnabled = false;
-  display->clearDisplay();
-  display->display();
+  if(!displayEnabled) return;                    // Вже вимкнено
   display->ssd1306_command(SSD1306_DISPLAYOFF);  // Фізично вимикаємо
+  displayEnabled = false;
 }
 
 void turnOnDisplay() {
+  if(displayEnabled) return;  // Вже увімкнено
   displayEnabled = true;
   display->ssd1306_command(SSD1306_DISPLAYON);  // Фізично вмикаємо
-  display->clearDisplay();
-  display->setTextColor(SSD1306_WHITE);
 }
