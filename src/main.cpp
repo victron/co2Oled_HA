@@ -24,6 +24,9 @@ unsigned long lastWiFiAttempt = 0;
 unsigned long lastUpdatHeater = 0;
 unsigned long lastUpdatHA = 0;
 const unsigned long WIFI_RETRY_INTERVAL = 5000;
+// Глобальна змінна - прапорець для restart
+volatile bool shouldRestart = false;
+
 // globals for sensor
 uint16_t co2 = 0;
 float temperature = 0.0f;
@@ -116,7 +119,7 @@ void publishRetainedTargetTemp(float value) {
 void watchdogCallback() {
   if(millis() - lastFeedTime > WATCHDOG_TIMEOUT) {
     Serial.println("WATCHDOG TIMEOUT!");
-    ESP.restart();
+    shouldRestart = true;  // ← Встановити прапорець замість restart
   }
 }
 
@@ -174,7 +177,12 @@ void setup() {
 }
 
 void loop() {
-  lastFeedTime = millis();
+  if(shouldRestart) {  // at beginning of loop
+    Serial.println("Перезавантаження через watchdog...");
+    Serial.flush();  // Дочекатись поки Serial виведе
+    delay(100);
+    ESP.restart();
+  }
 
   // ----------------- local -----------------------
   // КНОПКИ - викликаємо в кожному циклі для швидкого відгуку
@@ -226,4 +234,6 @@ void loop() {
     wifiRssi.setValue(WiFi.RSSI());
     heaterOnHA.setState(relayState);
   }
+
+  lastFeedTime = millis();  // should be at the end of loop
 }
