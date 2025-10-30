@@ -21,6 +21,8 @@ const unsigned long WATCHDOG_TIMEOUT = 30000;
 bool connected = false;
 bool haInitialized = false;  // Прапорець що HA ініціалізовано
 unsigned long lastWiFiAttempt = 0;
+unsigned long lastUpdatHeater = 0;
+unsigned long lastUpdatHA = 0;
 const unsigned long WIFI_RETRY_INTERVAL = 5000;
 // globals for sensor
 uint16_t co2 = 0;
@@ -41,7 +43,6 @@ HASensorNumber humSensor("humididy", HASensorNumber::PrecisionP2);
 HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HABinarySensor heaterOnHA("heater_onr");
-// HASensorNumber targetTempHA("target_temp", HASensorNumber::PrecisionP1);
 HANumber targetTempHA("targetBlanket", HANumber::PrecisionP0);
 
 void onMqttConnected() {
@@ -172,12 +173,6 @@ void setup() {
   setupOTA(HOSTNAME, OTA_PASSWORD);
 }
 
-unsigned long lastUpdateAt = 0;
-const unsigned int wifi_fail_triger = 300000;  // при кількості спроб реконнест
-
-unsigned long lastThermoUpdate = 0;
-const unsigned long THERMO_INTERVAL = 2000;  // 2 секунди для термостату
-
 void loop() {
   lastFeedTime = millis();
 
@@ -186,8 +181,8 @@ void loop() {
   handleButtons();
   handle_oled(co2, temperature, humidity);
 
-  if((millis() - lastUpdateAt) > 5000) {
-    lastUpdateAt = millis();
+  if((millis() - lastUpdatHeater) > 10000) {
+    lastUpdatHeater = millis();
 
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
@@ -221,15 +216,14 @@ void loop() {
     targetTempHA.setState(TempTarget);
   }
 
-  if(isDataReady) {
-    co2Sensor.setValue(co2);
-    tempSensor.setValue(temperature);
-    humSensor.setValue(humidity);
-    currentTempHA.setValue(TempCurrent);
+  if((millis() - lastUpdatHA) > 5000) {
+    if(isDataReady) {
+      co2Sensor.setValue(co2);
+      tempSensor.setValue(temperature);
+      humSensor.setValue(humidity);
+      currentTempHA.setValue(TempCurrent);
+    }
+    wifiRssi.setValue(WiFi.RSSI());
+    heaterOnHA.setState(relayState);
   }
-
-  wifiRssi.setValue(WiFi.RSSI());
-  // Можеш публікувати стан термостату в MQTT
-  heaterOnHA.setState(relayState);
-  // targetTempHA.setValue(TempTarget);
 }
