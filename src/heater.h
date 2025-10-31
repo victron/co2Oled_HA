@@ -30,7 +30,8 @@ const float minTemp = 15.0f;
 enum ThermoState {
   INIT,
   HEATING,
-  COOLING
+  COOLING,
+  OFF
 };
 
 // ОГОЛОШЕННЯ (extern) - кажемо що вони існують десь

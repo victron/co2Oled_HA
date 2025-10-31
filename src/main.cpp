@@ -47,6 +47,8 @@ HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HABinarySensor heaterOnHA("heater_onr");
 HANumber targetTempHA("targetBlanket", HANumber::PrecisionP0);
+String switchID = String(HOSTNAME) + "switch";
+HASwitch switchHA(switchID.c_str());
 
 void onMqttConnected() {
   // Please note that you need to subscribe topic each time the connection with the broker is acquired.
@@ -80,6 +82,11 @@ void onNumberCommand(HANumeric number, HANumber* sender) {
   }
 
   sender->setState(TempTarget);  // report the selected option back to the HA panel
+}
+
+void onSwitchCommand(bool state, HASwitch* sender) {
+  heaterState = (state ? ThermoState::INIT : ThermoState::OFF);
+  sender->setState(state);  // report state back to the Home Assistant
 }
 
 void setupWiFi() {
@@ -172,6 +179,11 @@ void setup() {
 
   heaterOnHA.setIcon("mdi:toggle-switch");
   heaterOnHA.setName("heater blanket");
+
+  switchHA.setIcon("mdi:toggle-switch-variant-off");
+  switchHA.setName("Switch heater");
+  switchHA.setRetain(true);
+  switchHA.onCommand(onSwitchCommand);
 
   // Ініціалізація OTA з паролем
   setupOTA(HOSTNAME, OTA_PASSWORD);

@@ -99,6 +99,10 @@ void updateThermostat(float TempCurrent) {
         heaterState = HEATING;
       }
       break;
+
+    case ThermoState::OFF:
+      relayState = false;
+      break;
   }
 
   digitalWrite(RELAY_PIN, relayState ? RELEY_ON : RELEY_OFF);
@@ -141,7 +145,7 @@ void handleButtons() {
 
   // Автовихід з режиму налаштування
   if(oledState != OFF && millis() - lastButtonPress >= SETTING_TIMEOUT) {
-    heaterState = INIT;
+    if(heaterState != ThermoState::OFF) heaterState = INIT;  // if heater was ON, return to INIT state
     oledState = OFF;
   }
 }
