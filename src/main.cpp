@@ -15,15 +15,18 @@
 //-----------------  wagchdog
 Ticker watchdogTicker;
 unsigned long lastFeedTime = 0;
-const unsigned long WATCHDOG_TIMEOUT = 30000;
+const unsigned long WATCHDOG_TIMEOUT = 120000;
+const unsigned long WIFI_RETRY_INTERVAL = 30000;
 //----------------------
 
 bool connected = false;
 bool haInitialized = false;  // Прапорець що HA ініціалізовано
+
+// timers values
 unsigned long lastWiFiAttempt = 0;
 unsigned long lastUpdatHeater = 0;
 unsigned long lastUpdatHA = 0;
-const unsigned long WIFI_RETRY_INTERVAL = 5000;
+
 // Глобальна змінна - прапорець для restart
 volatile bool shouldRestart = false;
 
@@ -150,6 +153,7 @@ void setup() {
   mqtt.onDisconnected(onMqttDisconnected);
   device.setName(HOSTNAME);  // name shown in HA
   device.setSoftwareVersion("1.1.0");
+  delay(10000);  // wait for wiFi connection
   init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
   currentTempHA.setIcon("mdi:thermometer");
   currentTempHA.setName("blanket current");
@@ -206,7 +210,7 @@ void loop() {
   }
 
   if(WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED, LOW);
+    digitalWrite(LED, (millis() / 200) % 2);
     // Спроба підключення раз на 5 секунд
     if(millis() - lastWiFiAttempt >= WIFI_RETRY_INTERVAL) {
       lastWiFiAttempt = millis();
