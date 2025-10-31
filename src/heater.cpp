@@ -3,7 +3,7 @@
 #include "oled.h"
 
 // ВИЗНАЧЕННЯ глобальних змінних - тільки тут, один раз!
-ThermoState heaterState = INIT;
+ThermoState heaterState = ThermoState::INIT;
 float TempTarget = 15.0f;
 float TempCurrent = 1001.0f;
 bool relayState = false;
@@ -73,30 +73,30 @@ float readTemperature(int samples) {
 // State Machine - чиста логіка без таймерів
 void updateThermostat(float TempCurrent) {
   switch(heaterState) {
-    case INIT:
+    case ThermoState::INIT:
       if(TempCurrent <= TempTarget - HYSTERESIS) {
-        heaterState = HEATING;
+        heaterState = ThermoState::HEATING;
         relayState = true;
       }
       if(TempCurrent >= TempTarget + HYSTERESIS) {
-        heaterState = COOLING;
+        heaterState = ThermoState::COOLING;
         relayState = false;
       }
       break;
 
-    case HEATING:
+    case ThermoState::HEATING:
       relayState = true;
 
       if(TempCurrent >= TempTarget + HYSTERESIS) {
-        heaterState = COOLING;
+        heaterState = ThermoState::COOLING;
       }
       break;
 
-    case COOLING:
+    case ThermoState::COOLING:
       relayState = false;
 
       if(TempCurrent <= TempTarget - HYSTERESIS) {
-        heaterState = HEATING;
+        heaterState = ThermoState::HEATING;
       }
       break;
 
@@ -114,7 +114,7 @@ button btnDown(BUTTON_DOWN);
 
 void handleButtons() {
   if(btnUp.isPressed() && btnDown.isPressed()) {
-    oledState = CO2_DISPLAY;
+    oledState = OledState::CO2_DISPLAY;
     lastButtonPress = millis();
     return;  // Виходимо, не обробляємо click
   }
@@ -122,8 +122,8 @@ void handleButtons() {
   bool upClicked = btnUp.click();
   bool downClicked = btnDown.click();
   if(upClicked || downClicked) {
-    if(oledState == OFF) {
-      oledState = SET_TARGET;
+    if(oledState == OledState::OFF) {
+      oledState = OledState::SET_TARGET;
       lastButtonPress = millis();
       return;  // Не змінюємо температуру
     }
@@ -144,8 +144,8 @@ void handleButtons() {
   }
 
   // Автовихід з режиму налаштування
-  if(oledState != OFF && millis() - lastButtonPress >= SETTING_TIMEOUT) {
-    if(heaterState != ThermoState::OFF) heaterState = INIT;  // if heater was ON, return to INIT state
-    oledState = OFF;
+  if(oledState != OledState::OFF && millis() - lastButtonPress >= SETTING_TIMEOUT) {
+    if(heaterState != ThermoState::OFF) heaterState = ThermoState::INIT;  // if heater was ON, return to INIT state
+    oledState = OledState::OFF;
   }
 }
