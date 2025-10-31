@@ -5,6 +5,17 @@ void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber&
   WiFi.macAddress(mac);
   device.setUniqueId(mac, sizeof(mac));
 
+  // connect to wifi
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while(WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);  // waiting for the connection
+  }
+  Serial.println();
+  Serial.println("Connected to the network");
+
+  // set device's details (optional)
+
   // configure sensor (optional)
   co2Sensor.setIcon("mdi:molecule-co2");
   co2Sensor.setName("co2");
