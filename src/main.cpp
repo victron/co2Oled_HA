@@ -84,6 +84,11 @@ void onNumberCommand(HANumeric number, HANumber* sender) {
   sender->setState(TempTarget);  // report the selected option back to the HA panel
 }
 
+void onSwitchCommand(bool state, HASwitch* sender) {
+  heaterState = (state ? ThermoState::INIT : ThermoState::OFF);
+  sender->setState(state);  // report state back to the Home Assistant
+}
+
 void setupWiFi() {
   Serial.print("connecting to ");
   Serial.println(WIFI_SSID);
@@ -176,6 +181,8 @@ void setup() {
 
   switchHA.setIcon("mdi:toggle-switch-variant-off");
   switchHA.setName("Switch heater");
+  switchHA.setRetain(true);
+  switchHA.onCommand(onSwitchCommand);
 
   // Ініціалізація OTA з паролем
   setupOTA(HOSTNAME, OTA_PASSWORD);
