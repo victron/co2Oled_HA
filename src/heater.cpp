@@ -99,6 +99,10 @@ void updateThermostat(float TempCurrent) {
         heaterState = HEATING;
       }
       break;
+
+    case ThermoState::OFF:
+      relayState = false;
+      break;
   }
 
   digitalWrite(RELAY_PIN, relayState ? RELEY_ON : RELEY_OFF);
