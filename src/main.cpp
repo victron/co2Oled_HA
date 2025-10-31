@@ -150,6 +150,7 @@ void setup() {
   mqtt.onDisconnected(onMqttDisconnected);
   device.setName(HOSTNAME);  // name shown in HA
   device.setSoftwareVersion("1.1.0");
+  delay(1000);  // wait for wifi
   init_ha(client, device, mqtt, co2Sensor, tempSensor, humSensor);
   currentTempHA.setIcon("mdi:thermometer");
   currentTempHA.setName("blanket current");
@@ -206,7 +207,7 @@ void loop() {
   }
 
   if(WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED, LOW);
+    digitalWrite(LED, (millis() / 200) % 2);
     // Спроба підключення раз на 5 секунд
     if(millis() - lastWiFiAttempt >= WIFI_RETRY_INTERVAL) {
       lastWiFiAttempt = millis();
