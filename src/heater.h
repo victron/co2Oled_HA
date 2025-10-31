@@ -27,10 +27,11 @@ const float maxTemp = 60.0f;
 const float minTemp = 15.0f;
 
 // Стани терморегулятора
-enum ThermoState {
+enum class ThermoState {
   INIT,
   HEATING,
-  COOLING
+  COOLING,
+  OFF
 };
 
 // ОГОЛОШЕННЯ (extern) - кажемо що вони існують десь

@@ -14,7 +14,7 @@
 
 Adafruit_SSD1306* display;
 bool displayEnabled = true;
-OledState oledState = OFF;
+OledState oledState = OledState::OFF;
 
 void init_oled() {
   display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -29,11 +29,11 @@ void init_oled() {
 
 void handle_oled(uint16_t co2, float tempCO2, float humidity) {
   switch(oledState) {
-    case OFF:
+    case OledState::OFF:
       turnOffDisplay();
       return;
 
-    case CO2_DISPLAY:
+    case OledState::CO2_DISPLAY:
       turnOnDisplay();
       display->clearDisplay();
       display->setTextColor(SSD1306_WHITE);
