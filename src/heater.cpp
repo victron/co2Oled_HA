@@ -71,7 +71,7 @@ float readTemperature(int samples) {
 }
 
 // State Machine - чиста логіка без таймерів
-void updateThermostat(float TempCurrent) {
+void handleThermostat(float TempCurrent) {
   switch(heaterState) {
     case ThermoState::INIT:
       if(TempCurrent <= TempTarget - HYSTERESIS) {

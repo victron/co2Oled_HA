@@ -46,7 +46,7 @@ extern const unsigned long SETTING_TIMEOUT;
 
 float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);
-void updateThermostat(float currentTemp);
+void handleThermostat(float currentTemp);
 void handleButtons();
 
 #endif

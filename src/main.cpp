@@ -89,7 +89,8 @@ void onNumberCommand(HANumeric number, HANumber* sender) {
 
 void onSwitchCommand(bool state, HASwitch* sender) {
   heaterState = (state ? ThermoState::INIT : ThermoState::OFF);
-  sender->setState(state);  // report state back to the Home Assistant
+  handleThermostat(TempCurrent);  // immediately update relay state
+  sender->setState(state);        // report state back to the Home Assistant
 }
 
 void setupWiFi() {
@@ -211,7 +212,7 @@ void loop() {
     // Read Measurement
     readMeasurement(co2, temperature, humidity, isDataReady);
     TempCurrent = readTemperature();
-    updateThermostat(TempCurrent);
+    handleThermostat(TempCurrent);
   }
 
   // ------------ remote -----------------------
