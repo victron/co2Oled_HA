@@ -64,6 +64,9 @@ void onMqttConnected() {
 
   digitalWrite(LED, HIGH);
   connected = true;
+  // sunchronize HA with current states
+  switchHA.setState((heaterState != ThermoState::OFF));
+  targetTempHA.setState(TempTarget);
 }
 
 void onMqttDisconnected() {
