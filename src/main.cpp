@@ -84,7 +84,8 @@ void onNumberCommand(HANumeric number, HANumber* sender) {
     }
   }
 
-  sender->setState(TempTarget);  // report the selected option back to the HA panel
+  sender->setState(TempTarget);     // report the selected option back to the HA panel
+  lastSentTargetTemp = TempTarget;  // щоб не публікувати зайвий раз (щоб не зациклювало)
 }
 
 void onSwitchCommand(bool state, HASwitch* sender) {
@@ -242,6 +243,7 @@ void loop() {
   }
 
   if((millis() - lastUpdatHA) > 5000) {
+    lastUpdatHA = millis();
     if(isDataReady) {
       co2Sensor.setValue(co2);
       tempSensor.setValue(temperature);
