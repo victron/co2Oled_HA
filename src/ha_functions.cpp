@@ -8,15 +8,15 @@ void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber&
   // configure sensor (optional)
   co2Sensor.setIcon("mdi:molecule-co2");
   co2Sensor.setName("co2");
-  // co2Sensor.setUnitOfMeasurement("pps");
+  co2Sensor.setUnitOfMeasurement("pps");
   co2Sensor.setDeviceClass("carbon_dioxide");
   tempSensor.setIcon("mdi:thermometer");
   tempSensor.setName("thermometer");
-  // tempSensor.setUnitOfMeasurement("°C");
+  tempSensor.setUnitOfMeasurement("°C");
   tempSensor.setDeviceClass("temperature");
   humSensor.setIcon("mdi:water-percent");
   humSensor.setName("humidity");
-  // humSensor.setUnitOfMeasurement("%");
+  humSensor.setUnitOfMeasurement("%");
   humSensor.setDeviceClass("humidity");
 
   if(mqtt.begin(BROKER_ADDR, MQTT_USERNAME, MQTT_PASSWORD)) {
