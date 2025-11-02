@@ -249,8 +249,9 @@ void loop() {
       co2Sensor.setValue(co2);
       tempSensor.setValue(temperature);
       humSensor.setValue(humidity);
-        }
+    }
     currentTempHA.setValue(TempCurrent);
+    targetTempHA.setState(TempTarget);  // to keep all on one graph
     wifiRssi.setValue(WiFi.RSSI());
   }
   heaterOnHA.setState(relayState);
