@@ -185,9 +185,11 @@ void setup() {
   wifiRssi.setIcon("mdi:wifi");
   wifiRssi.setName("WIFI RSSI");
   wifiRssi.setUnitOfMeasurement("dBm");
+  wifiRssi.setDeviceClass("signal_strength");
 
   heaterOnHA.setIcon("mdi:toggle-switch");
   heaterOnHA.setName("heater blanket");
+  heaterOnHA.setDeviceClass("duration");
 
   switchHA.setIcon("mdi:toggle-switch-variant-off");
   switchHA.setName("Switch heater");
