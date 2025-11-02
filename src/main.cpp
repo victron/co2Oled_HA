@@ -212,9 +212,9 @@ void loop() {
 
   if((millis() - lastUpdatHeater) > 10000) {
     lastUpdatHeater = millis();
-
-    // Read Measurement
-    readMeasurement(co2, temperature, humidity, isDataReady);
+    if(isDataReady) {
+      readMeasurement(co2, temperature, humidity, isDataReady);
+    }
     TempCurrent = readTemperature();
     handleThermostat(TempCurrent);
   }
@@ -247,15 +247,14 @@ void loop() {
 
   if((millis() - lastUpdatHA) > 5000) {
     lastUpdatHA = millis();
-    if(isDataReady) {
-      co2Sensor.setValue(co2);
-      tempSensor.setValue(temperature);
-      humSensor.setValue(humidity);
-      currentTempHA.setValue(TempCurrent);
-    }
+
+    co2Sensor.setValue(co2);
+    tempSensor.setValue(temperature);
+    humSensor.setValue(humidity);
+    currentTempHA.setValue(TempCurrent);
     wifiRssi.setValue(WiFi.RSSI());
-    heaterOnHA.setState(relayState);
   }
+  heaterOnHA.setState(relayState);
 
   lastFeedTime = millis();  // should be at the end of loop
 }
