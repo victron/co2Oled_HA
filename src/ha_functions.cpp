@@ -12,6 +12,7 @@ void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber&
   tempSensor.setIcon("mdi:thermometer");
   tempSensor.setName("thermometer");
   tempSensor.setUnitOfMeasurement("°C");
+  tempSensor.setDeviceClass("temperature");
   humSensor.setIcon("mdi:water-percent");
   humSensor.setName("humidity");
   humSensor.setUnitOfMeasurement("%");

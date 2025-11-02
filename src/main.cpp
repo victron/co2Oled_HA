@@ -170,6 +170,7 @@ void setup() {
   currentTempHA.setIcon("mdi:thermometer");
   currentTempHA.setName("blanket current");
   currentTempHA.setUnitOfMeasurement("°C");
+  currentTempHA.setDeviceClass("temperature");
 
   targetTempHA.setIcon("mdi:heating-coil");
   targetTempHA.setName("blanket target");
@@ -251,7 +252,7 @@ void loop() {
       humSensor.setValue(humidity);
     }
     currentTempHA.setValue(TempCurrent);
-    targetTempHA.setState(TempTarget);  // to keep all on one graph
+    // targetTempHA.setState(TempTarget);  // to keep all on one graph
     wifiRssi.setValue(WiFi.RSSI());
   }
   heaterOnHA.setState(relayState);
