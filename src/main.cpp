@@ -189,7 +189,7 @@ void setup() {
 
   heaterOnHA.setIcon("mdi:toggle-switch");
   heaterOnHA.setName("heater blanket");
-  heaterOnHA.setDeviceClass("duration");
+  heaterOnHA.setDeviceClass("temperature");
 
   switchHA.setIcon("mdi:toggle-switch-variant-off");
   switchHA.setName("Switch heater");
