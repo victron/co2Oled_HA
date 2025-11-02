@@ -170,13 +170,13 @@ void setup() {
   currentTempHA.setIcon("mdi:thermometer");
   currentTempHA.setName("blanket current");
   currentTempHA.setUnitOfMeasurement("°C");
-  currentTempHA.setDeviceClass("temperature");
+  currentTempHA.setDeviceClass("temperature");  // to group on one graph in HA
 
   targetTempHA.setIcon("mdi:heating-coil");
   targetTempHA.setName("blanket target");
   targetTempHA.setUnitOfMeasurement("°C");
-  targetTempHA.setDeviceClass("temperature");
-  targetTempHA.setMin(15.0f);  // not variables
+  targetTempHA.setDeviceClass("temperature");  // to group on one graph in HA
+  targetTempHA.setMin(15.0f);                  // not variables
   targetTempHA.setMax(50.0f);
   targetTempHA.setMode(HANumber::ModeSlider);
   targetTempHA.setRetain(true);
