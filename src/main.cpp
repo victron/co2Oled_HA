@@ -189,6 +189,7 @@ void setup() {
 
   heaterOnHA.setIcon("mdi:toggle-switch");
   heaterOnHA.setName("heater blanket");
+  // TODO: with device class "switch" it's not shown in HA correctly
   // heaterOnHA.setDeviceClass("temperature");
 
   switchHA.setIcon("mdi:toggle-switch-variant-off");

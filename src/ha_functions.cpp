@@ -9,6 +9,7 @@ void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber&
   co2Sensor.setIcon("mdi:molecule-co2");
   co2Sensor.setName("co2");
   co2Sensor.setUnitOfMeasurement("pps");
+  // TODO: with device class "carbon_dioxide" it's not shown in HA correctly
   // co2Sensor.setDeviceClass("carbon_dioxide");
   tempSensor.setIcon("mdi:thermometer");
   tempSensor.setName("thermometer");
