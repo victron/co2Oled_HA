@@ -50,8 +50,9 @@ HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HABinarySensor heaterOnHA("heater_onr");
 HANumber targetTempHA("targetBlanket", HANumber::PrecisionP0);
-String switchID = String(HOSTNAME) + "switch";
-HASwitch switchHA(switchID.c_str());
+// String switchID = String(HOSTNAME) + "switch";
+// HASwitch switchHA(switchID.c_str());
+HASwitch switchHA("blanket_switch");
 
 void onMqttConnected() {
   // Please note that you need to subscribe topic each time the connection with the broker is acquired.
