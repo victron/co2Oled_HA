@@ -193,7 +193,7 @@ void setup() {
 
   switchHA.setIcon("mdi:toggle-switch-variant-off");
   switchHA.setName("Switch heater");
-  switchHA.setRetain(true);
+  // switchHA.setRetain(true);
   switchHA.onCommand(onSwitchCommand);
 
   // Ініціалізація OTA з паролем
