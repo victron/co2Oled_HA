@@ -50,9 +50,8 @@ HASensorNumber wifiRssi("wifiRssi", HASensorNumber::PrecisionP0);
 HASensorNumber currentTempHA("currentTempHA", HASensorNumber::PrecisionP1);
 HABinarySensor heaterOnHA("heater_onr");
 HANumber targetTempHA("targetBlanket", HANumber::PrecisionP0);
-// String switchID = String(HOSTNAME) + "switch";
-// HASwitch switchHA(switchID.c_str());
-HASwitch switchHA("blanket_switch");
+String switchID = String(HOSTNAME) + "switch";
+HASwitch switchHA(switchID.c_str());
 
 void onMqttConnected() {
   // Please note that you need to subscribe topic each time the connection with the broker is acquired.
@@ -190,11 +189,11 @@ void setup() {
 
   heaterOnHA.setIcon("mdi:toggle-switch");
   heaterOnHA.setName("heater blanket");
-  heaterOnHA.setDeviceClass("temperature");
+  // heaterOnHA.setDeviceClass("temperature");
 
   switchHA.setIcon("mdi:toggle-switch-variant-off");
   switchHA.setName("Switch heater");
-  // switchHA.setRetain(true);
+  switchHA.setRetain(true);
   switchHA.onCommand(onSwitchCommand);
 
   // Ініціалізація OTA з паролем

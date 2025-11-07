@@ -9,7 +9,7 @@ void init_ha(WiFiClient& client, HADevice& device, HAMqtt& mqtt, HASensorNumber&
   co2Sensor.setIcon("mdi:molecule-co2");
   co2Sensor.setName("co2");
   co2Sensor.setUnitOfMeasurement("pps");
-  co2Sensor.setDeviceClass("carbon_dioxide");
+  // co2Sensor.setDeviceClass("carbon_dioxide");
   tempSensor.setIcon("mdi:thermometer");
   tempSensor.setName("thermometer");
   tempSensor.setUnitOfMeasurement("°C");
