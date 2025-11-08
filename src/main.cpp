@@ -143,7 +143,7 @@ void setup() {
   while(!Serial) {
     delay(100);
   }
-
+  ESP.wdtEnable(0);  // Hardware WDT
   watchdogTicker.attach(5, watchdogCallback);
   lastFeedTime = millis();
 
@@ -202,6 +202,7 @@ void setup() {
 }
 
 void loop() {
+  ESP.wdtFeed();       // Годувати HW WDT
   if(shouldRestart) {  // at beginning of loop
     Serial.println("Перезавантаження через watchdog...");
     Serial.flush();  // Дочекатись поки Serial виведе

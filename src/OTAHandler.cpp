@@ -1,10 +1,11 @@
 #include "OTAHandler.h"
 
-void setupOTA(const char *hostname, const char *password) {
+void setupOTA(const char* hostname, const char* password) {
   ArduinoOTA.setHostname(hostname);
   ArduinoOTA.setPassword(password);  // Додавання пароля
 
   ArduinoOTA.onStart([]() {
+    ESP.wdtDisable();  // ← Вимкнути на час OTA
         String type;
         if (ArduinoOTA.getCommand() == U_FLASH) {
             type = "sketch";
@@ -13,11 +14,15 @@ void setupOTA(const char *hostname, const char *password) {
         }
         Serial.println("Start updating " + type); });
 
-  ArduinoOTA.onEnd([]() { Serial.println("\nEnd"); });
+  ArduinoOTA.onEnd([]() {
+    ESP.wdtEnable(0);  // ← Увімкнути назад
+    Serial.println("\nEnd");
+  });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); });
 
   ArduinoOTA.onError([](ota_error_t error) {
+    ESP.wdtEnable(0);  // ← Увімкнути при помилці
         Serial.printf("Error[%u]: ", error);
         if (error == OTA_AUTH_ERROR) {
             Serial.println("Auth Failed");
