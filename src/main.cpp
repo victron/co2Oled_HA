@@ -149,6 +149,11 @@ void setup() {
 
   // OLED used nonstandard SDA and SCL pins
   Wire.begin(D5, D6);
+  // ✅ Встановити timeout для clock stretching
+  Wire.setClockStretchLimit(1500);  // мікросекунди
+
+  // ✅ Знизити швидкість для стабільності
+  Wire.setClock(50000);  // 50kHz замість 100kHz
 
   // LED id
   pinMode(LED, OUTPUT);  // LED pin as output
