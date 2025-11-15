@@ -1,6 +1,6 @@
 #include "co2sensor.h"
 
-SensirionI2CScd4x scd4x;
+SensirionI2cScd4x scd4x;
 
 void printUint16Hex(uint16_t value) {
   Serial.print(value < 4096 ? "0" : "");
@@ -21,7 +21,7 @@ void init_sensor() {
   uint16_t error;
   char errorMessage[256];
 
-  scd4x.begin(Wire);
+  scd4x.begin(Wire, SCD40_I2C_ADDR_62);
 
   // stop potentially previously started measurement
   error = scd4x.stopPeriodicMeasurement();
@@ -31,15 +31,17 @@ void init_sensor() {
     Serial.println(errorMessage);
   }
 
-  uint16_t serial0;
-  uint16_t serial1;
-  uint16_t serial2;
-  error = scd4x.getSerialNumber(serial0, serial1, serial2);
+  uint64_t serialNumber = 0;
+  error = scd4x.getSerialNumber(serialNumber);
   if(error) {
     Serial.print("Error trying to execute getSerialNumber(): ");
     errorToString(error, errorMessage, 256);
     Serial.println(errorMessage);
   } else {
+    // Конвертувати uint64_t в три uint16_t для виводу
+    uint16_t serial0 = (serialNumber >> 32) & 0xFFFF;
+    uint16_t serial1 = (serialNumber >> 16) & 0xFFFF;
+    uint16_t serial2 = serialNumber & 0xFFFF;
     printSerialNumber(serial0, serial1, serial2);
   }
 
@@ -58,7 +60,7 @@ void readMeasurement(uint16_t& co2, float& temperature, float& humidity, bool& i
   uint16_t error;
   char errorMessage[256];
   // bool isDataReady = false;
-  error = scd4x.getDataReadyFlag(isDataReady);
+  error = scd4x.getDataReadyStatus(isDataReady);
   if(error) {
     Serial.print("Error trying to execute getDataReadyFlag(): ");
     errorToString(error, errorMessage, 256);
