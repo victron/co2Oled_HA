@@ -1,7 +1,5 @@
 
-#include <SensirionI2CScd4x.h>
-
-
+#include <SensirionI2cScd4x.h>
 
 void printUint16Hex(uint16_t value);
 void printSerialNumber(uint16_t serial0, uint16_t serial1, uint16_t serial2);
