@@ -140,8 +140,6 @@ void handleThermostat(float TempCurrent) {
       requestRelayChange(false);
       break;
   }
-
-  digitalWrite(RELAY_PIN, relayState ? RELEY_ON : RELEY_OFF);
 }
 
 // Створюємо екземпляри кнопок
