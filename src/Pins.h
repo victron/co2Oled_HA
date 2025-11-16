@@ -9,5 +9,6 @@
 #define OLED_SDA D5    // Stock firmware shows wrong pins
 #define OLED_SCL D6    // They swap SDA with SCL ;)
 #define OLED_RESET -1  // Reset pin # (or -1 if sharing Arduino reset pin)
+#define ZERO_DETECT 3
 
 #endif

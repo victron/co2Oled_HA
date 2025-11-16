@@ -138,10 +138,10 @@ void watchdogCallback() {
 }
 
 void setup() {
-  Serial.begin(115200);
-  while(!Serial) {
-    delay(100);
-  }
+  // Serial.begin(115200);
+  // while(!Serial) {
+  //   delay(100);
+  // }
   ESP.wdtDisable();           // вимкнути HW WDT перед налаштуванням
   ESP.wdtEnable(WDTO_120MS);  // Hardware WDT
   watchdogTicker.attach(5, watchdogCallback);
@@ -158,7 +158,7 @@ void setup() {
   // LED id
   pinMode(LED, OUTPUT);  // LED pin as output
   digitalWrite(LED, LOW);
-
+  pinMode(ZERO_DETECT, INPUT_PULLUP);
   pinMode(RELAY_PIN, OUTPUT);
 
   setupWiFi();
