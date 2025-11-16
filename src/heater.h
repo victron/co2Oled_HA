@@ -4,13 +4,10 @@
 
 #include <Arduino.h>
 
+#include "Pins.h"
 #include "button.h"
-#define THERMISTOR_PIN 0  // Пін, до якого підключено термістор (аналоговий пін A0)
-#define RELAY_PIN 5
 #define RELEY_ON HIGH
 #define RELEY_OFF LOW
-#define BUTTON_DOWN 4
-#define BUTTON_UP 13
 
 // Безпечний діапазон ADC
 #define ADC_MIN_SAFE 430

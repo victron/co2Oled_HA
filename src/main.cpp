@@ -11,7 +11,6 @@
 #include "heater.h"
 #include "oled.h"
 
-#define LED 2
 //-----------------  wagchdog
 Ticker watchdogTicker;
 unsigned long lastFeedTime = 0;

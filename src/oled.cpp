@@ -7,10 +7,7 @@
 #define SCREEN_WIDTH 128  // OLED display width, in pixels
 #define SCREEN_HEIGHT 64  // OLED display height, in pixels
 
-#define OLED_RESET -1        // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C  // If not work please try 0x3D
-#define OLED_SDA D5          // Stock firmware shows wrong pins
-#define OLED_SCL D6          // They swap SDA with SCL ;)
 
 Adafruit_SSD1306* display;
 bool displayEnabled = true;

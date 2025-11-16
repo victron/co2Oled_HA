@@ -3,6 +3,8 @@
 
 #include <Adafruit_SSD1306.h>
 
+#include "Pins.h"
+
 const uint16_t highCO2level = 1200;
 
 enum class OledState {
