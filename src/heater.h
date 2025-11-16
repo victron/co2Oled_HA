@@ -41,9 +41,15 @@ extern const float HYSTERESIS;
 extern unsigned long lastButtonPress;
 extern const unsigned long SETTING_TIMEOUT;
 
+// ДЛЯ ZERO-CROSSING
+extern volatile bool pendingRelayState;       // Бажаний стан реле
+extern volatile bool relayChangeRequested;    // Флаг що потрібна зміна
+extern volatile unsigned long lastZeroCross;  // Для debounce
+
 float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);
 void handleThermostat(float currentTemp);
 void handleButtons();
-
+void IRAM_ATTR zeroCrossingISR();
+void requestRelayChange(bool newState);
 #endif

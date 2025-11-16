@@ -149,10 +149,10 @@ void setup() {
 
   // OLED used nonstandard SDA and SCL pins
   Wire.begin(D5, D6);
-  // ✅ Встановити timeout для clock stretching
+  // Встановити timeout для clock stretching
   Wire.setClockStretchLimit(1500);  // мікросекунди
 
-  // ✅ Знизити швидкість для стабільності
+  // Знизити швидкість для стабільності
   Wire.setClock(50000);  // 50kHz замість 100kHz
 
   // LED id
@@ -160,6 +160,7 @@ void setup() {
   digitalWrite(LED, LOW);
   pinMode(ZERO_DETECT, INPUT_PULLUP);
   pinMode(RELAY_PIN, OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(ZERO_DETECT), zeroCrossingISR, RISING);
 
   setupWiFi();
 

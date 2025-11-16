@@ -11,6 +11,11 @@ bool relayState = false;
 unsigned long lastButtonPress = 0;
 const unsigned long SETTING_TIMEOUT = 10000;
 
+// ДЛЯ ZERO-CROSSING
+volatile bool pendingRelayState = false;
+volatile bool relayChangeRequested = false;
+volatile unsigned long lastZeroCross = 0;
+
 // ============================================================
 // КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
 // ============================================================
@@ -70,22 +75,53 @@ float readTemperature(int samples) {
   return getTemperatureFromADC(sum / samples);
 }
 
+// ISR - ОБРОБНИК ПЕРЕРИВАННЯ (максимально швидкий!)
+void IRAM_ATTR zeroCrossingISR() {
+  unsigned long now = micros();
+
+  // Debounce - ігноруємо сигнали частіше ніж кожні 8мс (50Hz = 10мс період)
+  if(now - lastZeroCross < 9000) {
+    return;
+  }
+  lastZeroCross = now;
+
+  // Якщо є запит на зміну стану - виконуємо
+  if(relayChangeRequested) {
+    digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
+    relayState = pendingRelayState;  // Оновлюємо актуальний стан
+    relayChangeRequested = false;    // Скидаємо флаг
+  }
+}
+
+//  ФУНКЦІЯ ДЛЯ ЗАПИТУ ЗМІНИ СТАНУ РЕЛЕ
+void requestRelayChange(bool newState) {
+  if(relayState == newState) {
+    return;  // Стан не змінився - нічого не робимо
+  }
+
+  // Встановлюємо бажаний стан та флаг
+  pendingRelayState = newState;
+  relayChangeRequested = true;
+
+  // ISR зробить фактичне перемикання при наступному zero-crossing
+}
+
 // State Machine - чиста логіка без таймерів
 void handleThermostat(float TempCurrent) {
   switch(heaterState) {
     case ThermoState::INIT:
       if(TempCurrent <= TempTarget - HYSTERESIS) {
         heaterState = ThermoState::HEATING;
-        relayState = true;
+        requestRelayChange(true);
       }
       if(TempCurrent >= TempTarget + HYSTERESIS) {
         heaterState = ThermoState::COOLING;
-        relayState = false;
+        requestRelayChange(false);
       }
       break;
 
     case ThermoState::HEATING:
-      relayState = true;
+      requestRelayChange(true);
 
       if(TempCurrent >= TempTarget + HYSTERESIS) {
         heaterState = ThermoState::COOLING;
@@ -93,7 +129,7 @@ void handleThermostat(float TempCurrent) {
       break;
 
     case ThermoState::COOLING:
-      relayState = false;
+      requestRelayChange(false);
 
       if(TempCurrent <= TempTarget - HYSTERESIS) {
         heaterState = ThermoState::HEATING;
@@ -101,7 +137,7 @@ void handleThermostat(float TempCurrent) {
       break;
 
     case ThermoState::OFF:
-      relayState = false;
+      requestRelayChange(false);
       break;
   }
 
