@@ -158,7 +158,7 @@ void setup() {
   // LED id
   pinMode(LED, OUTPUT);  // LED pin as output
   digitalWrite(LED, LOW);
-  pinMode(ZERO_DETECT, INPUT);
+  pinMode(ZERO_DETECT, INPUT_PULLUP);
   pinMode(RELAY_PIN, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(ZERO_DETECT), zeroCrossingISR, RISING);
 
