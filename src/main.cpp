@@ -143,7 +143,8 @@ void setup() {
   while(!Serial) {
     delay(100);
   }
-  ESP.wdtEnable(0);  // Hardware WDT
+  ESP.wdtDisable();           // вимкнути HW WDT перед налаштуванням
+  ESP.wdtEnable(WDTO_120MS);  // Hardware WDT
   watchdogTicker.attach(5, watchdogCallback);
   lastFeedTime = millis();
 
