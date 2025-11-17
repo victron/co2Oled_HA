@@ -6,7 +6,7 @@
 ThermoState heaterState = ThermoState::INIT;
 float TempTarget = 15.0f;
 float TempCurrent = 1001.0f;
-bool relayState = false;
+volatile bool relayState = false;
 
 unsigned long lastButtonPress = 0;
 const unsigned long SETTING_TIMEOUT = 10000;
@@ -87,7 +87,13 @@ void IRAM_ATTR zeroCrossingISR() {
 
   // Якщо є запит на зміну стану - виконуємо
   if(relayChangeRequested) {
-    digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
+    // digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
+    // direct access to port for speed
+    if(pendingRelayState) {
+      GPOS = (1 << RELAY_PIN);  // GPIO Output Set (HIGH)
+    } else {
+      GPOC = (1 << RELAY_PIN);  // GPIO Output Clear (LOW)
+    }
     relayState = pendingRelayState;  // Оновлюємо актуальний стан
     relayChangeRequested = false;    // Скидаємо флаг
   }
@@ -112,11 +118,9 @@ void handleThermostat(float TempCurrent) {
     case ThermoState::INIT:
       if(TempCurrent <= TempTarget - HYSTERESIS) {
         heaterState = ThermoState::HEATING;
-        requestRelayChange(true);
       }
       if(TempCurrent >= TempTarget + HYSTERESIS) {
         heaterState = ThermoState::COOLING;
-        requestRelayChange(false);
       }
       break;
 

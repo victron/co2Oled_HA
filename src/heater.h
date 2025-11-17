@@ -35,7 +35,7 @@ enum class ThermoState {
 extern ThermoState heaterState;
 extern float TempTarget;
 extern float TempCurrent;
-extern bool relayState;
+extern volatile bool relayState;
 extern const float HYSTERESIS;
 
 extern unsigned long lastButtonPress;
