@@ -81,42 +81,80 @@ void IRAM_ATTR zeroCrossingISR() {
   zeroCrossFlag = true;  // NOTHING MORE!
 }
 
+// працюємо з HALF-PERIOD (100Hz)
+static uint32_t lastCrossTime = 0;
+static uint32_t avgPeriod = 10000;  // старт: 10 ms = half-period при 50Hz
+
+// new thresholds
+static const uint32_t MIN_PERIOD_US = 8000;   // мало: <8 ms — швидше за норму (шум)
+static const uint32_t MAX_PERIOD_US = 12000;  // довго: >12 ms — занадто довго (пропуск)
+static const uint32_t MAX_JITTER_US = 1000;   // ±1 ms допустимий джитер
+static const uint8_t OK_THRESHOLD = 8;        // скільки валідних імпульсів треба
+static const uint8_t MAX_NOISE = 5;           // скільки шумових імпульсів поспіль дозволено
+
+static uint8_t okCounter = 0;
+static uint8_t noiseCounter = 0;
+static bool synced = false;
+
+// --- SMOOTHING FILTER ---
+inline void updateAveragePeriod(uint32_t p) {
+  // простий IIR фільтр для згладження
+  avgPeriod = (avgPeriod * 7 + p) / 8;
+}
+
 void handleZeroCrossFSM() {
-  static unsigned long lastCrossTime = 0;
-  static uint8_t noiseCounter = 0;
+  // 1) якщо не було zero-cross → виходимо
+  if(!zeroCrossFlag) return;
+  zeroCrossFlag = false;
 
-  if(!zeroCrossFlag) return;  // no event
-  zeroCrossFlag = false;      // reset flag
-
-  unsigned long now = micros();
-  unsigned long diff = now - lastCrossTime;
-
-  // -------------------------------------
-  //  AUTO-RECOVERY & NOISE FILTER
-  // -------------------------------------
-  // нормальні інтервали: 5000–15000 µs (50 Hz мережева синусоїда)
-  if(diff < 3000 || diff > 20000) {
-    // Вважаємо це шумовим імпульсом
-    noiseCounter++;
-
-    if(noiseCounter >= 10) {
-      // Якщо надто багато шуму — робимо автокорекцію
-      noiseCounter = 0;
-      lastCrossTime = now;
-    }
-    return;  // пропуск
-  }
-
-  // якщо ми тут → zero-cross реальний
-  noiseCounter = 0;
+  uint32_t now = micros();
+  uint32_t period = now - lastCrossTime;
   lastCrossTime = now;
 
-  // -------------------------------------
-  //     DELAYED RELAY SWITCHING HERE
-  // -------------------------------------
-  if(relayChangeRequested) {
+  // 2) первинна перевірка діапазону
+  bool validRange = (period >= MIN_PERIOD_US && period <= MAX_PERIOD_US);
+
+  // 3) перевірка джитеру
+  uint32_t diff = (period > avgPeriod) ? (period - avgPeriod) : (avgPeriod - period);
+  bool validJitter = (diff < MAX_JITTER_US);
+
+  bool isOkPulse = validRange && validJitter;
+
+  if(isOkPulse) {
+    // VALІДНИЙ ІМПУЛЬС
+    okCounter++;
+    noiseCounter = 0;
+    updateAveragePeriod(period);
+
+    // якщо набрали достатньо валідних імпульсів → синхронізовані
+    if(!synced && okCounter >= OK_THRESHOLD) {
+      synced = true;
+    }
+
+  } else {
+    // ШУМОВИЙ ІМПУЛЬС
+    noiseCounter++;
+    okCounter = 0;
+
+    // якщо забагато шуму → втрачаємо синхронізацію
+    if(synced && noiseCounter >= MAX_NOISE) {
+      synced = false;
+    }
+  }
+
+  // 4) авто-відновлення синхронізації
+  // якщо давно не було валідних zero-cross (мережа пропала?)
+  if((micros() - lastCrossTime) > 120000) {  // 0.12 сек
+    synced = false;
+    okCounter = 0;
+    noiseCounter = 0;
+    // Ми чекаємо нового справжнього zero-cross
+    return;
+  }
+
+  // 5) Безпечне перемикання реле (строге zero-cross)
+  if(synced && relayChangeRequested) {
     digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
-    relayState = pendingRelayState;
     relayChangeRequested = false;
   }
 }
