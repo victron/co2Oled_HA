@@ -15,6 +15,7 @@ const unsigned long SETTING_TIMEOUT = 10000;
 volatile bool pendingRelayState = false;
 volatile bool relayChangeRequested = false;
 volatile unsigned long lastZeroCross = 0;
+volatile bool zeroCrossFlag = false;
 
 // ============================================================
 // КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
@@ -74,28 +75,49 @@ float readTemperature(int samples) {
 
   return getTemperatureFromADC(sum / samples);
 }
-
+/// ------------------- zero-crossing та реле ------------------- ///
 // ISR - ОБРОБНИК ПЕРЕРИВАННЯ (максимально швидкий!)
 void IRAM_ATTR zeroCrossingISR() {
+  zeroCrossFlag = true;  // NOTHING MORE!
+}
+
+void handleZeroCrossFSM() {
+  static unsigned long lastCrossTime = 0;
+  static uint8_t noiseCounter = 0;
+
+  if(!zeroCrossFlag) return;  // no event
+  zeroCrossFlag = false;      // reset flag
+
   unsigned long now = micros();
+  unsigned long diff = now - lastCrossTime;
 
-  // Debounce - ігноруємо сигнали частіше ніж кожні 8мс (50Hz = 10мс період)
-  if(now - lastZeroCross < 9000) {
-    return;
-  }
-  lastZeroCross = now;
+  // -------------------------------------
+  //  AUTO-RECOVERY & NOISE FILTER
+  // -------------------------------------
+  // нормальні інтервали: 5000–15000 µs (50 Hz мережева синусоїда)
+  if(diff < 3000 || diff > 20000) {
+    // Вважаємо це шумовим імпульсом
+    noiseCounter++;
 
-  // Якщо є запит на зміну стану - виконуємо
-  if(relayChangeRequested) {
-    // digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
-    // direct access to port for speed
-    if(pendingRelayState) {
-      GPOS = (1 << RELAY_PIN);  // GPIO Output Set (HIGH)
-    } else {
-      GPOC = (1 << RELAY_PIN);  // GPIO Output Clear (LOW)
+    if(noiseCounter >= 10) {
+      // Якщо надто багато шуму — робимо автокорекцію
+      noiseCounter = 0;
+      lastCrossTime = now;
     }
-    relayState = pendingRelayState;  // Оновлюємо актуальний стан
-    relayChangeRequested = false;    // Скидаємо флаг
+    return;  // пропуск
+  }
+
+  // якщо ми тут → zero-cross реальний
+  noiseCounter = 0;
+  lastCrossTime = now;
+
+  // -------------------------------------
+  //     DELAYED RELAY SWITCHING HERE
+  // -------------------------------------
+  if(relayChangeRequested) {
+    digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
+    relayState = pendingRelayState;
+    relayChangeRequested = false;
   }
 }
 

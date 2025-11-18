@@ -209,7 +209,9 @@ void setup() {
 }
 
 void loop() {
-  ESP.wdtFeed();       // Годувати HW WDT
+  ESP.wdtFeed();  // Годувати HW WDT
+                  // Обробляємо zero-cross подію одразу, щоб не затримувати інші частини
+  handleZeroCrossFSM();
   if(shouldRestart) {  // at beginning of loop
     Serial.println("Перезавантаження через watchdog...");
     Serial.flush();  // Дочекатись поки Serial виведе

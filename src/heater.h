@@ -52,4 +52,5 @@ void handleThermostat(float currentTemp);
 void handleButtons();
 void IRAM_ATTR zeroCrossingISR();
 void requestRelayChange(bool newState);
+void handleZeroCrossFSM();
 #endif
