@@ -161,6 +161,7 @@ void setup() {
   digitalWrite(LED, LOW);
   pinMode(ZERO_DETECT, INPUT_PULLUP);
   pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, RELEY_OFF);
   attachInterrupt(digitalPinToInterrupt(ZERO_DETECT), zeroCrossISR, RISING);
 
   setupWiFi();

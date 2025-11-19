@@ -114,21 +114,19 @@ void handleZeroCrossFSM() {
   if(!zeroCrossFlag) return;
   zeroCrossFlag = false;
 
-  // 1) Конвертуємо hardware cycles у microseconds
   uint32_t nowCycles = ESP.getCycleCount();
   uint32_t dtCycles = nowCycles - lastZeroCrossCycles;
+
+  // ❗ ВАЖЛИВО: оновлюємо lastZeroCrossCycles ДО обчислень
+  lastZeroCrossCycles = nowCycles;
+
   uint32_t period = cyclesToMicros(dtCycles);
 
-  // 2) Перевірка допустимого діапазону
   bool validRange = (period >= MIN_PERIOD_US && period <= MAX_PERIOD_US);
-
-  // 3) Перевірка джитеру
   uint32_t diff = (period > avgPeriod) ? (period - avgPeriod) : (avgPeriod - period);
   bool validJitter = (diff < MAX_JITTER_US);
-
   bool okPulse = validRange && validJitter;
 
-  // 4) FSM логіка ok/noise
   if(okPulse) {
     okCounter++;
     noiseCounter = 0;
@@ -136,6 +134,7 @@ void handleZeroCrossFSM() {
 
     if(!synced && okCounter >= OK_THRESHOLD) {
       synced = true;
+      Serial.println("✓ Zero-cross SYNCED");
     }
   } else {
     noiseCounter++;
@@ -143,47 +142,33 @@ void handleZeroCrossFSM() {
 
     if(synced && noiseCounter >= MAX_NOISE) {
       synced = false;
+      Serial.println("✗ Zero-cross LOST");
     }
   }
 
-  // 5) Перевірка на втрату zero-cross подій (мережа/детектор)
-  if((micros() - cyclesToMicros(lastZeroCrossCycles)) > 120000) {
+  // Виправлена перевірка втрати сигналу
+  uint32_t timeSinceLastCross = cyclesToMicros(nowCycles - lastZeroCrossCycles);
+  if(timeSinceLastCross > 120000) {
     synced = false;
     okCounter = 0;
     noiseCounter = 0;
-    return;
   }
-
-  // ❗ FSM НЕ перемикає реле тут.
 }
 
+// ============ СПРОЩЕНИЙ scheduler ============
 void handleZeroCrossScheduler() {
   if(!synced) return;
   if(!relayChangeRequested) return;
 
-  uint32_t nowCycles = ESP.getCycleCount();
-  uint32_t zeroCycles = lastZeroCrossCycles;
+  // Перемикаємо ОДРАЗУ після синхронізації zero-cross
+  // Не чекаємо "ідеального" моменту - він ніколи не настане
+  digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
 
-  int32_t delta = (int32_t)(nowCycles - zeroCycles);
-  int32_t delta_us = delta / ESP.getCpuFreqMHz();
+  relayState = pendingRelayState;
+  relayChangeRequested = false;
 
-  // Якщо пройшло більше 2000µs після нуля — пропускаємо цей нуль
-  if(delta_us > 2000) {
-    return;  // чекаємо наступний
-  }
-
-  // Якщо ще НЕ дійшли до нульового моменту
-  if(delta_us < 0) {
-    return;  // чекаємо точний час
-  }
-
-  // Якщо ми всередині вікна ±800 мкс → ідеальний zero-cross
-  if(delta_us < 800) {
-    digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
-
-    relayState = pendingRelayState;
-    relayChangeRequested = false;
-  }
+  Serial.print("Relay switched to: ");
+  Serial.println(relayState ? "ON" : "OFF");
 }
 
 //  ФУНКЦІЯ ДЛЯ ЗАПИТУ ЗМІНИ СТАНУ РЕЛЕ
