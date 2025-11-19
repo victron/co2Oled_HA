@@ -86,11 +86,11 @@ static uint32_t lastCrossTime = 0;
 static uint32_t avgPeriod = 10000;  // старт: 10 ms = half-period при 50Hz
 
 // new thresholds
-static const uint32_t MIN_PERIOD_US = 8000;   // мало: <8 ms — швидше за норму (шум)
-static const uint32_t MAX_PERIOD_US = 12000;  // довго: >12 ms — занадто довго (пропуск)
-static const uint32_t MAX_JITTER_US = 1000;   // ±1 ms допустимий джитер
-static const uint8_t OK_THRESHOLD = 8;        // скільки валідних імпульсів треба
-static const uint8_t MAX_NOISE = 5;           // скільки шумових імпульсів поспіль дозволено
+static const uint32_t MIN_PERIOD_US = 10000 - 2000;  // мало
+static const uint32_t MAX_PERIOD_US = 10000 + 2000;  // занадто довго (пропуск)
+static const uint32_t MAX_JITTER_US = 1000;          // ±1 ms допустимий джитер
+static const uint8_t OK_THRESHOLD = 8;               // скільки валідних імпульсів треба
+static const uint8_t MAX_NOISE = 5;                  // скільки шумових імпульсів поспіль дозволено
 
 static uint8_t okCounter = 0;
 static uint8_t noiseCounter = 0;
@@ -155,6 +155,7 @@ void handleZeroCrossFSM() {
   // 5) Безпечне перемикання реле (строге zero-cross)
   if(synced && relayChangeRequested) {
     digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
+    relayState = pendingRelayState;
     relayChangeRequested = false;
   }
 }
