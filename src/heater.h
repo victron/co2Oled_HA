@@ -50,7 +50,8 @@ float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);
 void handleThermostat(float currentTemp);
 void handleButtons();
-void IRAM_ATTR zeroCrossingISR();
+IRAM_ATTR void zeroCrossISR();
 void requestRelayChange(bool newState);
 void handleZeroCrossFSM();
+void handleZeroCrossScheduler();
 #endif

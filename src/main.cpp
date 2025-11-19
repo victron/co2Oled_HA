@@ -161,7 +161,7 @@ void setup() {
   digitalWrite(LED, LOW);
   pinMode(ZERO_DETECT, INPUT_PULLUP);
   pinMode(RELAY_PIN, OUTPUT);
-  attachInterrupt(digitalPinToInterrupt(ZERO_DETECT), zeroCrossingISR, RISING);
+  attachInterrupt(digitalPinToInterrupt(ZERO_DETECT), zeroCrossISR, RISING);
 
   setupWiFi();
 
@@ -209,9 +209,10 @@ void setup() {
 }
 
 void loop() {
-  ESP.wdtFeed();  // Годувати HW WDT
-                  // Обробляємо zero-cross подію одразу, щоб не затримувати інші частини
-  handleZeroCrossFSM();
+  handleZeroCrossFSM();        // фільтрує імпульси
+  handleZeroCrossScheduler();  // робить клац реле ТОЧНО у нулі
+
+  ESP.wdtFeed();       // Годувати HW WDT
   if(shouldRestart) {  // at beginning of loop
     Serial.println("Перезавантаження через watchdog...");
     Serial.flush();  // Дочекатись поки Serial виведе

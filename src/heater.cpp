@@ -11,12 +11,6 @@ volatile bool relayState = false;
 unsigned long lastButtonPress = 0;
 const unsigned long SETTING_TIMEOUT = 10000;
 
-// ДЛЯ ZERO-CROSSING
-volatile bool pendingRelayState = false;
-volatile bool relayChangeRequested = false;
-volatile unsigned long lastZeroCross = 0;
-volatile bool zeroCrossFlag = false;
-
 // ============================================================
 // КОЕФІЦІЄНТИ ДЛЯ ESP8266 - ПОЛІНОМ 3-ГО СТУПЕНЯ
 // ============================================================
@@ -75,10 +69,19 @@ float readTemperature(int samples) {
 
   return getTemperatureFromADC(sum / samples);
 }
+
 /// ------------------- zero-crossing та реле ------------------- ///
+// ДЛЯ ZERO-CROSSING
+volatile bool pendingRelayState = false;
+volatile bool relayChangeRequested = false;
+volatile unsigned long lastZeroCross = 0;
+volatile bool zeroCrossFlag = false;
 // ISR - ОБРОБНИК ПЕРЕРИВАННЯ (максимально швидкий!)
-void IRAM_ATTR zeroCrossingISR() {
-  zeroCrossFlag = true;  // NOTHING MORE!
+volatile uint32_t lastZeroCrossCycles;
+
+IRAM_ATTR void zeroCrossISR() {
+  lastZeroCrossCycles = ESP.getCycleCount();
+  zeroCrossFlag = true;
 }
 
 // працюємо з HALF-PERIOD (100Hz)
@@ -96,65 +99,88 @@ static uint8_t okCounter = 0;
 static uint8_t noiseCounter = 0;
 static bool synced = false;
 
-// --- SMOOTHING FILTER ---
-inline void updateAveragePeriod(uint32_t p) {
-  // простий IIR фільтр для згладження
-  avgPeriod = (avgPeriod * 7 + p) / 8;
+inline uint32_t cyclesToMicros(uint32_t c) {
+  return c / ESP.getCpuFreqMHz();  // 80MHz → ділити на 80
 }
 
+inline void updateAveragePeriod(uint32_t p) {
+  avgPeriod = (avgPeriod * 7 + p) / 8;  // IIR фільтр
+}
+
+// ----------------------------------------------------------------------
+// FSM: фільтрація zero-cross + sync
+// ----------------------------------------------------------------------
 void handleZeroCrossFSM() {
-  // 1) якщо не було zero-cross → виходимо
   if(!zeroCrossFlag) return;
   zeroCrossFlag = false;
 
-  uint32_t now = micros();
-  uint32_t period = now - lastCrossTime;
-  lastCrossTime = now;
+  // 1) Конвертуємо hardware cycles у microseconds
+  uint32_t nowCycles = ESP.getCycleCount();
+  uint32_t dtCycles = nowCycles - lastZeroCrossCycles;
+  uint32_t period = cyclesToMicros(dtCycles);
 
-  // 2) первинна перевірка діапазону
+  // 2) Перевірка допустимого діапазону
   bool validRange = (period >= MIN_PERIOD_US && period <= MAX_PERIOD_US);
 
-  // 3) перевірка джитеру
+  // 3) Перевірка джитеру
   uint32_t diff = (period > avgPeriod) ? (period - avgPeriod) : (avgPeriod - period);
   bool validJitter = (diff < MAX_JITTER_US);
 
-  bool isOkPulse = validRange && validJitter;
+  bool okPulse = validRange && validJitter;
 
-  if(isOkPulse) {
-    // VALІДНИЙ ІМПУЛЬС
+  // 4) FSM логіка ok/noise
+  if(okPulse) {
     okCounter++;
     noiseCounter = 0;
     updateAveragePeriod(period);
 
-    // якщо набрали достатньо валідних імпульсів → синхронізовані
     if(!synced && okCounter >= OK_THRESHOLD) {
       synced = true;
     }
-
   } else {
-    // ШУМОВИЙ ІМПУЛЬС
     noiseCounter++;
     okCounter = 0;
 
-    // якщо забагато шуму → втрачаємо синхронізацію
     if(synced && noiseCounter >= MAX_NOISE) {
       synced = false;
     }
   }
 
-  // 4) авто-відновлення синхронізації
-  // якщо давно не було валідних zero-cross (мережа пропала?)
-  if((micros() - lastCrossTime) > 120000) {  // 0.12 сек
+  // 5) Перевірка на втрату zero-cross подій (мережа/детектор)
+  if((micros() - cyclesToMicros(lastZeroCrossCycles)) > 120000) {
     synced = false;
     okCounter = 0;
     noiseCounter = 0;
-    // Ми чекаємо нового справжнього zero-cross
     return;
   }
 
-  // 5) Безпечне перемикання реле (строге zero-cross)
-  if(synced && relayChangeRequested) {
+  // ❗ FSM НЕ перемикає реле тут.
+}
+
+void handleZeroCrossScheduler() {
+  if(!synced) return;
+  if(!relayChangeRequested) return;
+
+  uint32_t nowCycles = ESP.getCycleCount();
+  uint32_t zeroCycles = lastZeroCrossCycles;
+
+  int32_t delta = (int32_t)(nowCycles - zeroCycles);
+  int32_t delta_us = delta / ESP.getCpuFreqMHz();
+
+  // Якщо пройшло більше 2000µs після нуля — пропускаємо цей нуль
+  if(delta_us > 2000) {
+    return;  // чекаємо наступний
+  }
+
+  // Якщо ще НЕ дійшли до нульового моменту
+  if(delta_us < 0) {
+    return;  // чекаємо точний час
+  }
+
+  // Якщо ми всередині вікна ±800 мкс → ідеальний zero-cross
+  if(delta_us < 800) {
     digitalWrite(RELAY_PIN, pendingRelayState ? RELEY_ON : RELEY_OFF);
+
     relayState = pendingRelayState;
     relayChangeRequested = false;
   }
