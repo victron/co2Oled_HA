@@ -115,12 +115,18 @@ void handleZeroCrossFSM() {
   if(!zeroCrossFlag) return;
   zeroCrossFlag = false;
 
-  uint32_t nowCycles = ESP.getCycleCount();
-  uint32_t dtCycles = nowCycles - lastZeroCrossCycles;
+  // Зчитати останню мітку переривання (volatile)
+  uint32_t irqCycles = lastZeroCrossCycles;
+  static uint32_t prevIrqCycles = 0;
+  if(prevIrqCycles == 0) {
+    // Перший імпульс — ініціюємо prev і чекємо наступного
+    prevIrqCycles = irqCycles;
+    return;
+  }
 
-  // ❗ ВАЖЛИВО: оновлюємо lastZeroCrossCycles ПІСЛЯ обчислення dtCycles
-  lastZeroCrossCycles = nowCycles;
-
+  // Період = різниця між послідовними перериваннями
+  uint32_t dtCycles = irqCycles - prevIrqCycles;
+  prevIrqCycles = irqCycles;
   uint32_t period = cyclesToMicros(dtCycles);
 
   // Debug вивід
@@ -146,7 +152,7 @@ void handleZeroCrossFSM() {
     okCounter++;
     noiseCounter = 0;
     updateAveragePeriod(period);
-    lastValidCrossCycles = nowCycles;  // ← Оновлюємо час останнього валідного cross
+    lastValidCrossCycles = irqCycles;  // використовуємо мітку переривання
 
     if(!synced && okCounter >= OK_THRESHOLD) {
       synced = true;
@@ -170,9 +176,8 @@ void handleZeroCrossFSM() {
     }
   }
 
-  // Виправлена перевірка втрати сигналу - використовуємо lastValidCrossCycles
   if(lastValidCrossCycles > 0) {
-    uint32_t timeSinceLastValid = cyclesToMicros(nowCycles - lastValidCrossCycles);
+    uint32_t timeSinceLastValid = cyclesToMicros(irqCycles - lastValidCrossCycles);
     if(timeSinceLastValid > 120000) {
       synced = false;
       okCounter = 0;
