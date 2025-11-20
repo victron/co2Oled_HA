@@ -110,6 +110,7 @@ inline void updateAveragePeriod(uint32_t p) {
 // ----------------------------------------------------------------------
 // FSM: фільтрація zero-cross + sync
 // ----------------------------------------------------------------------
+static uint32_t lastValidCrossCycles = 0;
 void handleZeroCrossFSM() {
   if(!zeroCrossFlag) return;
   zeroCrossFlag = false;
@@ -117,10 +118,24 @@ void handleZeroCrossFSM() {
   uint32_t nowCycles = ESP.getCycleCount();
   uint32_t dtCycles = nowCycles - lastZeroCrossCycles;
 
-  // ❗ ВАЖЛИВО: оновлюємо lastZeroCrossCycles ДО обчислень
+  // ❗ ВАЖЛИВО: оновлюємо lastZeroCrossCycles ПІСЛЯ обчислення dtCycles
   lastZeroCrossCycles = nowCycles;
 
   uint32_t period = cyclesToMicros(dtCycles);
+
+  // Debug вивід
+  static unsigned long lastDebugPrint = 0;
+  if(millis() - lastDebugPrint > 2000) {
+    lastDebugPrint = millis();
+    Serial.print("Period: ");
+    Serial.print(period);
+    Serial.print(" µs | Synced: ");
+    Serial.print(synced);
+    Serial.print(" | OK: ");
+    Serial.print(okCounter);
+    Serial.print(" | Noise: ");
+    Serial.println(noiseCounter);
+  }
 
   bool validRange = (period >= MIN_PERIOD_US && period <= MAX_PERIOD_US);
   uint32_t diff = (period > avgPeriod) ? (period - avgPeriod) : (avgPeriod - period);
@@ -131,12 +146,21 @@ void handleZeroCrossFSM() {
     okCounter++;
     noiseCounter = 0;
     updateAveragePeriod(period);
+    lastValidCrossCycles = nowCycles;  // ← Оновлюємо час останнього валідного cross
 
     if(!synced && okCounter >= OK_THRESHOLD) {
       synced = true;
       Serial.println("✓ Zero-cross SYNCED");
     }
   } else {
+    Serial.print("Invalid pulse: ");
+    Serial.print(period);
+    Serial.print(" µs (range: ");
+    Serial.print(validRange);
+    Serial.print(", jitter: ");
+    Serial.print(validJitter);
+    Serial.println(")");
+
     noiseCounter++;
     okCounter = 0;
 
@@ -146,12 +170,15 @@ void handleZeroCrossFSM() {
     }
   }
 
-  // Виправлена перевірка втрати сигналу
-  uint32_t timeSinceLastCross = cyclesToMicros(nowCycles - lastZeroCrossCycles);
-  if(timeSinceLastCross > 120000) {
-    synced = false;
-    okCounter = 0;
-    noiseCounter = 0;
+  // Виправлена перевірка втрати сигналу - використовуємо lastValidCrossCycles
+  if(lastValidCrossCycles > 0) {
+    uint32_t timeSinceLastValid = cyclesToMicros(nowCycles - lastValidCrossCycles);
+    if(timeSinceLastValid > 120000) {
+      synced = false;
+      okCounter = 0;
+      noiseCounter = 0;
+      Serial.println("✗ No valid cross for 120ms - reset sync");
+    }
   }
 }
 
