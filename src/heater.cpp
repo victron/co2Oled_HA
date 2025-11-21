@@ -77,7 +77,7 @@ volatile bool relayChangeRequested = false;
 volatile unsigned long lastZeroCrossCycles = 0;
 volatile bool zeroCrossFlag = false;
 
-ICACHE_RAM_ATTR void IRAM_ATTR zeroCrossISR() {
+ICACHE_RAM_ATTR void zeroCrossISR() {
   // дуже коротко — записати мітку і встановити флаг
   lastZeroCrossCycles = ESP.getCycleCount();
   zeroCrossFlag = true;
