@@ -74,14 +74,14 @@ float readTemperature(int samples) {
 // ДЛЯ ZERO-CROSSING
 volatile bool pendingRelayState = false;
 volatile bool relayChangeRequested = false;
-volatile unsigned long lastZeroCrossCycles = 0;
+volatile uint32_t lastZeroCrossCycles = 0;
 volatile bool zeroCrossFlag = false;
 
-ICACHE_RAM_ATTR void zeroCrossISR() {
-  // дуже коротко — записати мітку і встановити флаг
-  lastZeroCrossCycles = ESP.getCycleCount();
-  zeroCrossFlag = true;
-}
+IRAM_ATTR void zeroCrossISR() {
+   // дуже коротко — записати мітку і встановити флаг
+   lastZeroCrossCycles = ESP.getCycleCount();
+   zeroCrossFlag = true;
+ }
 
 // працюємо з HALF-PERIOD (100Hz)
 static uint32_t lastCrossTime = 0;
