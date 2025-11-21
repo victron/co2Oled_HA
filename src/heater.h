@@ -42,9 +42,9 @@ extern unsigned long lastButtonPress;
 extern const unsigned long SETTING_TIMEOUT;
 
 // ДЛЯ ZERO-CROSSING
-extern volatile bool pendingRelayState;       // Бажаний стан реле
-extern volatile bool relayChangeRequested;    // Флаг що потрібна зміна
-extern volatile unsigned long lastZeroCross;  // Для debounce
+extern volatile bool pendingRelayState;             // Бажаний стан реле
+extern volatile bool relayChangeRequested;          // Флаг що потрібна зміна
+extern volatile unsigned long lastZeroCrossCycles;  // Для debounce
 
 float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);

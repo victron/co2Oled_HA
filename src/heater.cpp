@@ -74,12 +74,11 @@ float readTemperature(int samples) {
 // ДЛЯ ZERO-CROSSING
 volatile bool pendingRelayState = false;
 volatile bool relayChangeRequested = false;
-volatile unsigned long lastZeroCross = 0;
+volatile unsigned long lastZeroCrossCycles = 0;
 volatile bool zeroCrossFlag = false;
-// ISR - ОБРОБНИК ПЕРЕРИВАННЯ (максимально швидкий!)
-volatile uint32_t lastZeroCrossCycles;
 
-IRAM_ATTR void zeroCrossISR() {
+ICACHE_RAM_ATTR void IRAM_ATTR zeroCrossISR() {
+  // дуже коротко — записати мітку і встановити флаг
   lastZeroCrossCycles = ESP.getCycleCount();
   zeroCrossFlag = true;
 }
@@ -113,28 +112,27 @@ inline void updateAveragePeriod(uint32_t p) {
 static uint32_t lastValidCrossCycles = 0;
 void handleZeroCrossFSM() {
   if(!zeroCrossFlag) return;
+  // скидаємо флаг тут (обробка в loop)
   zeroCrossFlag = false;
 
-  // Зчитати останню мітку переривання (volatile)
+  // зчитати volatile
   uint32_t irqCycles = lastZeroCrossCycles;
   static uint32_t prevIrqCycles = 0;
   if(prevIrqCycles == 0) {
-    // Перший імпульс — ініціюємо prev і чекємо наступного
     prevIrqCycles = irqCycles;
     return;
   }
 
-  // Період = різниця між послідовними перериваннями
   uint32_t dtCycles = irqCycles - prevIrqCycles;
   prevIrqCycles = irqCycles;
-  uint32_t period = cyclesToMicros(dtCycles);
+  uint32_t period_us = cyclesToMicros(dtCycles);
 
   // Debug вивід
   static unsigned long lastDebugPrint = 0;
   if(millis() - lastDebugPrint > 2000) {
     lastDebugPrint = millis();
     Serial.print("Period: ");
-    Serial.print(period);
+    Serial.print(period_us);
     Serial.print(" µs | Synced: ");
     Serial.print(synced);
     Serial.print(" | OK: ");
@@ -143,15 +141,15 @@ void handleZeroCrossFSM() {
     Serial.println(noiseCounter);
   }
 
-  bool validRange = (period >= MIN_PERIOD_US && period <= MAX_PERIOD_US);
-  uint32_t diff = (period > avgPeriod) ? (period - avgPeriod) : (avgPeriod - period);
+  bool validRange = (period_us >= MIN_PERIOD_US && period_us <= MAX_PERIOD_US);
+  uint32_t diff = (period_us > avgPeriod) ? (period_us - avgPeriod) : (avgPeriod - period_us);
   bool validJitter = (diff < MAX_JITTER_US);
   bool okPulse = validRange && validJitter;
 
   if(okPulse) {
     okCounter++;
     noiseCounter = 0;
-    updateAveragePeriod(period);
+    updateAveragePeriod(period_us);
     lastValidCrossCycles = irqCycles;  // використовуємо мітку переривання
 
     if(!synced && okCounter >= OK_THRESHOLD) {
@@ -160,7 +158,7 @@ void handleZeroCrossFSM() {
     }
   } else {
     Serial.print("Invalid pulse: ");
-    Serial.print(period);
+    Serial.print(period_us);
     Serial.print(" µs (range: ");
     Serial.print(validRange);
     Serial.print(", jitter: ");
