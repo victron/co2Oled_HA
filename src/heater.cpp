@@ -77,11 +77,11 @@ volatile bool relayChangeRequested = false;
 volatile uint32_t lastZeroCrossCycles = 0;
 volatile bool zeroCrossFlag = false;
 
-IRAM_ATTR void zeroCrossISR() {
-   // дуже коротко — записати мітку і встановити флаг
-   lastZeroCrossCycles = ESP.getCycleCount();
-   zeroCrossFlag = true;
- }
+void IRAM_ATTR zeroCrossISR() {
+  // дуже коротко — записати мітку і встановити флаг
+  lastZeroCrossCycles = ESP.getCycleCount();
+  zeroCrossFlag = true;
+}
 
 // працюємо з HALF-PERIOD (100Hz)
 static uint32_t lastCrossTime = 0;

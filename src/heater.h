@@ -42,15 +42,15 @@ extern unsigned long lastButtonPress;
 extern const unsigned long SETTING_TIMEOUT;
 
 // ДЛЯ ZERO-CROSSING
-extern volatile bool pendingRelayState;             // Бажаний стан реле
-extern volatile bool relayChangeRequested;          // Флаг що потрібна зміна
-extern volatile uint32_t lastZeroCrossCycles;       // Для debounce (узгоджено з ESP.getCycleCount())
+extern volatile bool pendingRelayState;        // Бажаний стан реле
+extern volatile bool relayChangeRequested;     // Флаг що потрібна зміна
+extern volatile uint32_t lastZeroCrossCycles;  // Для debounce (узгоджено з ESP.getCycleCount())
 
 float readTemperature(int samples = 20);
 float getTemperatureFromADC(int adcValue);
 void handleThermostat(float currentTemp);
 void handleButtons();
-IRAM_ATTR void zeroCrossISR();
+void IRAM_ATTR zeroCrossISR();
 void requestRelayChange(bool newState);
 void handleZeroCrossFSM();
 void handleZeroCrossScheduler();
