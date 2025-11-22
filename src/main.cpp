@@ -165,7 +165,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ZERO_DETECT), zeroCrossISR, RISING);
 
   setupWiFi();
-
+  WiFi.setAutoReconnect(true);  // should be default, but for strictness
   init_oled();
   init_sensor();
 
@@ -277,5 +277,4 @@ void loop() {
     wifiRssi.setValue(WiFi.RSSI());
   }
   heaterOnHA.setState(relayState);
-
 }
