@@ -216,6 +216,9 @@ void loop() {
 
   ESP.wdtFeed();  // годівля WDT якнайшвидше
 
+  // Оновлюємо маркер активності одразу — щоб коротка відсутність WiFi не викликала рестарт
+  lastFeedTime = millis();
+
   if(shouldRestart) ESP.restart();  // безпечний виклик рестарту
 
   // ----------------- local -----------------------
@@ -275,5 +278,4 @@ void loop() {
   }
   heaterOnHA.setState(relayState);
 
-  lastFeedTime = millis();  // should be at the end of loop
 }
