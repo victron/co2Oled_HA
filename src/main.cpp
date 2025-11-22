@@ -210,21 +210,21 @@ void setup() {
 }
 
 void loop() {
-  handleZeroCrossFSM();        // фільтрує імпульси
-  handleZeroCrossScheduler();  // робить клац реле ТОЧНО у нулі
+  // Обробка zero-cross: фільтрація (1×) і scheduler (частіше)
+  handleZeroCrossFSM();        // фільтрує імпульси — один виклик достатній
+  handleZeroCrossScheduler();  // перший виклик scheduler — ранній
 
-  ESP.wdtFeed();       // Годувати HW WDT
-  if(shouldRestart) {  // at beginning of loop
-    Serial.println("Перезавантаження через watchdog...");
-    Serial.flush();  // Дочекатись поки Serial виведе
-    delay(100);
-    ESP.restart();
-  }
+  ESP.wdtFeed();  // годівля WDT якнайшвидше
+
+  if(shouldRestart) ESP.restart();  // безпечний виклик рестарту
 
   // ----------------- local -----------------------
   // КНОПКИ - викликаємо в кожному циклі для швидкого відгуку
   handleButtons();
   handle_oled(co2, temperature, humidity);
+
+  // Перед читанням сенсорів / оновленням термостата — ще раз визвати scheduler
+  handleZeroCrossScheduler();
 
   if((millis() - lastUpdatHeater) > 10000) {
     lastUpdatHeater = millis();
@@ -234,6 +234,9 @@ void loop() {
   }
 
   // ------------ remote -----------------------
+  // Перед мережевими викликами — ще раз scheduler
+  handleZeroCrossScheduler();
+
   if(!connected && WiFi.status() == WL_CONNECTED) {
     // not mqtt and connected to wifi
     Serial.println("WiFi OK, mqtt NOK");
