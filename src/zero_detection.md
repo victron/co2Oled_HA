@@ -7,4 +7,4 @@ C1=10nF - to fix noise
 R8=10k - instead internal pull-up, it's more strong
 
 Optional:
-H11AA1 output -> (Rseries 470 Ω) -> node -> GPIO13
+H11AA1 output -> (R series 470 Ω) -> node -> GPIO13
