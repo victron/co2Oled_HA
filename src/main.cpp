@@ -144,7 +144,7 @@ void setup() {
   // }
   Serial.end();            // disable USB serial
   ESP.wdtDisable();        // вимкнути HW WDT перед налаштуванням
-  ESP.wdtEnable(WDTO_1S);  // Hardware WDT
+  ESP.wdtEnable(WDTO_8S);  // Hardware WDT
   watchdogTicker.attach(5, watchdogCallback);
   lastFeedTime = millis();
 
